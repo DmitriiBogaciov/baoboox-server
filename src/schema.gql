@@ -1,0 +1,156 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Block {
+  _id: ID!
+  content: String
+  order: Float!
+  page: Page!
+  type: String
+}
+
+type Book {
+  _id: ID!
+  author: String!
+  categories: [Category!]!
+  createdAt: DateTime!
+  description: String
+  image: String
+  language: String!
+  tags: [String!]
+  title: String!
+  updatedAt: DateTime!
+  visibility: Boolean!
+}
+
+type Category {
+  _id: ID!
+  name: String!
+  parentId: ID
+}
+
+input CreateBlockInput {
+  content: String
+  order: Float!
+  page: ID!
+  type: String
+}
+
+input CreateBookInput {
+  author: String!
+  categories: [String!]!
+  description: String
+  image: String
+  language: String!
+  tags: [String!]
+  title: String!
+  visibility: Boolean!
+}
+
+input CreateCategoryInput {
+  name: String!
+  parentId: ID
+}
+
+input CreatePageInput {
+  bookId: ID!
+  order: Int!
+  parentId: ID
+  title: String
+  visibility: Boolean
+}
+
+input CreateUserInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type Mutation {
+  createBlock(createBlockInput: CreateBlockInput!): Block!
+  createBook(createBookInput: CreateBookInput!): Book!
+  createCategory(createCategoryInput: CreateCategoryInput!): Category!
+  createPage(createPageInput: CreatePageInput!): Page!
+  createUser(createUserInput: CreateUserInput!): User!
+  removeBlock(id: Int!): Block!
+  removeBook(id: Int!): Book!
+  removeCategory(id: Int!): Category!
+  removePage(id: Int!): Page!
+  removeUser(id: Int!): User!
+  updateBlock(updateBlockInput: UpdateBlockInput!): Block!
+  updateBook(updateBookInput: UpdateBookInput!): Book!
+  updateCategory(updateCategoryInput: UpdateCategoryInput!): Category!
+  updatePage(updatePageInput: UpdatePageInput!): Page!
+  updateUser(updateUserInput: UpdateUserInput!): User!
+}
+
+type Page {
+  _id: ID!
+  bookId: ID!
+  order: Int!
+  parentId: ID
+  title: String
+  visibility: Boolean
+}
+
+type Query {
+  block(id: Int!): Block!
+  book(id: Int!): Book!
+  books: [Book!]!
+  categories: [Category!]!
+  category(id: Int!): Category!
+  page(id: Int!): Page!
+  user(id: Int!): User!
+}
+
+input UpdateBlockInput {
+  content: String
+  id: Int!
+  order: Float
+  page: ID
+  type: String
+}
+
+input UpdateBookInput {
+  author: String
+  categories: [String!]
+  description: String
+  id: Int!
+  image: String
+  language: String
+  tags: [String!]
+  title: String
+  visibility: Boolean
+}
+
+input UpdateCategoryInput {
+  id: Int!
+  name: String
+  parentId: ID
+}
+
+input UpdatePageInput {
+  bookId: ID
+  id: Int!
+  order: Int
+  parentId: ID
+  title: String
+  visibility: Boolean
+}
+
+input UpdateUserInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+type User {
+  _id: String!
+  firstName: String
+  lastName: String
+}
