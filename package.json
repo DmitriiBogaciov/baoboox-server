@@ -34,6 +34,7 @@
     "@nestjs/platform-express": "^10.0.0",
     "class-validator": "^0.14.1",
     "express": "^4.19.2",
+    "express-oauth2-jwt-bearer": "^1.6.0",
     "express-openid-connect": "github:auth0/express-openid-connect",
     "graphql": "^16.9.0",
     "graphql-ws": "^5.16.0",

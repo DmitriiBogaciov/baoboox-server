@@ -12,7 +12,6 @@ import { CategoryModule } from './category/category.module';
 import { PageModule } from './page/page.module';
 import { BlockModule } from './block/block.module';
 import { AuthModule } from './auth/auth.module';
-import { PassportModule } from '@nestjs/passport';
 import { DevtoolsModule } from '@nestjs/devtools-integration';
 
 @Module({
@@ -20,15 +19,18 @@ import { DevtoolsModule } from '@nestjs/devtools-integration';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+
     DevtoolsModule.register({
       http: process.env.NODE_ENV !== 'production',
     }),
+
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       sortSchema: true,
       context: ({ req }) => ({ req }),
     }),
+
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
@@ -36,6 +38,7 @@ import { DevtoolsModule } from '@nestjs/devtools-integration';
       }),
       inject: [ConfigService],
     }),
+
     UserModule,
     BookModule,
     CategoryModule,

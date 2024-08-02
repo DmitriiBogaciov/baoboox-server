@@ -18,7 +18,7 @@ export class CategoryService {
   }
 
   findAll() {
-    return `This action returns all category`;
+    return this.categoryModel.find().exec();
   }
 
   findOne(id: number) {
