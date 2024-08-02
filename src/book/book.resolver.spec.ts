@@ -3,6 +3,7 @@ import { getModelToken, getConnectionToken } from '@nestjs/mongoose';
 import { BookResolver } from './book.resolver';
 import { BookService } from './book.service';
 import { Book } from './entities/book.entity';
+import { CategoryService } from 'src/category/category.service';
 
 describe('BookResolver', () => {
   let resolver: BookResolver;
@@ -12,6 +13,7 @@ describe('BookResolver', () => {
       providers: [
         BookResolver,
         BookService,
+        CategoryService, // Provide the CategoryService
         {
           provide: getModelToken(Book.name),
           useValue: {} 
