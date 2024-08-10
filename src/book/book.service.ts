@@ -16,11 +16,13 @@ export class BookService {
   ) {}
 
   async create(createBookInput: CreateBookInput): Promise<Book> {
-    if (createBookInput.categories) {
-      await this.categoryService.checkCategoriesExist(createBookInput.categories);
+    // if (createBookInput.categories) {
+    //   await this.categoryService.checkCategoriesExist(createBookInput.categories);
+    // }
+    const bookData = {
+      ...createBookInput,
     }
-
-    const createdBook = new this.bookModel(createBookInput);
+    const createdBook = new this.bookModel(bookData);
     return createdBook.save();
   }
 

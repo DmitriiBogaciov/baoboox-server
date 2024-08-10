@@ -13,6 +13,7 @@ import { PageModule } from './page/page.module';
 import { BlockModule } from './block/block.module';
 import { AuthModule } from './auth/auth.module';
 import { DevtoolsModule } from '@nestjs/devtools-integration';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { DevtoolsModule } from '@nestjs/devtools-integration';
     PageModule,
     BlockModule,
     AuthModule,
+    HttpModule,
   ],
   controllers: [AppController],
   providers: [AppService],

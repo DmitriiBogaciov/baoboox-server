@@ -4,21 +4,23 @@ import { Book } from './entities/book.entity';
 import { CreateBookInput } from './dto/create-book.input';
 import { UpdateBookInput } from './dto/update-book.input';
 import { UseGuards } from '@nestjs/common';
-import { AuthGuard } from 'src/auth/AuthGuard';
-import { PermissionsGuard } from 'src/auth/PermGuard';
+import { AuthGuard } from '../auth/AuthGuard';
+import { AuthService } from 'src/auth/auth.service';
 
 @Resolver(() => Book)
 export class BookResolver {
-  constructor(private readonly bookService: BookService) {}
+  constructor(
+    private readonly bookService: BookService,
+    private readonly authService: AuthService
+    ) {}
 
-  @UseGuards(AuthGuard)
+  @UseGuards(new AuthGuard([]))
   @Mutation(() => Book)
   createBook(@Args('createBookInput') createBookInput: CreateBookInput) {
     return this.bookService.create(createBookInput);
   }
 
-  @UseGuards(AuthGuard)
-  @UseGuards(new PermissionsGuard(['read:book']))
+  @UseGuards(new AuthGuard(['read:book']))
   @Query(() => [Book], { name: 'books' })
   findAll() {
     return this.bookService.findAll();

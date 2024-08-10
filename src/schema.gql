@@ -38,14 +38,7 @@ input CreateBlockInput {
 }
 
 input CreateBookInput {
-  author: String!
-  categories: [String!]!
-  description: String
-  image: String
-  language: String!
-  tags: [String!]
   title: String!
-  visibility: Boolean!
 }
 
 input CreateCategoryInput {
@@ -61,11 +54,6 @@ input CreatePageInput {
   visibility: Boolean
 }
 
-input CreateUserInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
-}
-
 """
 A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
 """
@@ -76,17 +64,14 @@ type Mutation {
   createBook(createBookInput: CreateBookInput!): Book!
   createCategory(createCategoryInput: CreateCategoryInput!): Category!
   createPage(createPageInput: CreatePageInput!): Page!
-  createUser(createUserInput: CreateUserInput!): User!
   removeBlock(id: Int!): Block!
   removeBook(id: Int!): Book!
   removeCategory(id: Int!): Category!
   removePage(id: Int!): Page!
-  removeUser(id: Int!): User!
   updateBlock(updateBlockInput: UpdateBlockInput!): Block!
   updateBook(updateBookInput: UpdateBookInput!): Book!
   updateCategory(updateCategoryInput: UpdateCategoryInput!): Category!
   updatePage(updatePageInput: UpdatePageInput!): Page!
-  updateUser(updateUserInput: UpdateUserInput!): User!
 }
 
 type Page {
@@ -105,7 +90,6 @@ type Query {
   categories: [Category!]!
   category(id: Int!): Category!
   page(id: Int!): Page!
-  user(id: Int!): User!
 }
 
 input UpdateBlockInput {
@@ -117,15 +101,8 @@ input UpdateBlockInput {
 }
 
 input UpdateBookInput {
-  author: String
-  categories: [String!]
-  description: String
   id: Int!
-  image: String
-  language: String
-  tags: [String!]
   title: String
-  visibility: Boolean
 }
 
 input UpdateCategoryInput {
@@ -141,16 +118,4 @@ input UpdatePageInput {
   parentId: ID
   title: String
   visibility: Boolean
-}
-
-input UpdateUserInput {
-  """Example field (placeholder)"""
-  exampleField: Int
-  id: Int!
-}
-
-type User {
-  _id: String!
-  firstName: String
-  lastName: String
 }
