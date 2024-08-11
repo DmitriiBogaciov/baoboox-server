@@ -21,6 +21,10 @@ export class CategoryService {
     return this.categoryModel.find().exec();
   }
 
+  findByIds(categoryIds: string[]) {
+    return this.categoryModel.find({ _id: { $in: categoryIds } }).exec();
+  }
+
   findOne(id: number) {
     return `This action returns a #${id} category`;
   }

@@ -27,7 +27,6 @@ export class AuthGuard implements CanActivate {
           req = ctx.getContext().req;
         } else {
           req = context.switchToHttp().getRequest<Request>();
-          const response = context.switchToHttp().getResponse<Response>();  
         }
 
           const validateAccessToken = promisify(auth({

@@ -17,31 +17,31 @@ export class Book {
   title: string;
 
   @Field({ nullable: true })
-  @Prop()
+  @Prop({type: String, default: null})
   description?: string;
 
-  @Field()
+  @Field({nullable: true})
   @Prop()
   author: string;
 
   @Field({ nullable: true })
-  @Prop()
+  @Prop({type: String, default: null})
   image?: string;
 
-  @Field({ defaultValue: true })
-  @Prop({ default: true })
+  @Field({ nullable: true })
+  @Prop({type: Boolean, default: false })
   visibility: boolean;
 
-  @Field(() => [Category])
-  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Category' }] })
+  @Field(() => [Category], { nullable: true })
+  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Category' }], default: null })
   categories: Category[];
 
   @Field(() => [String], { nullable: true })
-  @Prop([String])
+  @Prop({type: [String], default: null})
   tags?: string[];
 
-  @Field()
-  @Prop()
+  @Field({ nullable: true })
+  @Prop({type: String, default: null})
   language: string;
 
   @Field(() => Date)

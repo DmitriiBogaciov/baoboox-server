@@ -4,14 +4,14 @@ import { BookResolver } from './book.resolver';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Book, BookSchema } from './entities/book.entity'
 import { CategoryModule } from '../category/category.module'
-import { AuthModule } from '../auth/auth.module'
+import { UserModule } from 'src/user/user.module';
 
 
 @Module({
   imports: [
     MongooseModule.forFeature([{name: Book.name, schema: BookSchema}]),
     CategoryModule,
-    AuthModule
+    UserModule
   ],
   providers: [BookResolver, BookService],
   exports: [BookService]

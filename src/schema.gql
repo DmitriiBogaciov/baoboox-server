@@ -12,16 +12,16 @@ type Block {
 
 type Book {
   _id: ID!
-  author: String!
-  categories: [Category!]!
+  author: String
+  categories: [Category!]
   createdAt: DateTime!
   description: String
   image: String
-  language: String!
+  language: String
   tags: [String!]
   title: String!
   updatedAt: DateTime!
-  visibility: Boolean!
+  visibility: Boolean
 }
 
 type Category {
@@ -38,7 +38,14 @@ input CreateBlockInput {
 }
 
 input CreateBookInput {
+  author: String
+  categories: [String!]
+  description: String
+  image: String
+  language: String
+  tags: [String!]
   title: String!
+  visibility: Boolean
 }
 
 input CreateCategoryInput {
@@ -65,7 +72,6 @@ type Mutation {
   createCategory(createCategoryInput: CreateCategoryInput!): Category!
   createPage(createPageInput: CreatePageInput!): Page!
   removeBlock(id: Int!): Block!
-  removeBook(id: Int!): Book!
   removeCategory(id: Int!): Category!
   removePage(id: Int!): Page!
   updateBlock(updateBlockInput: UpdateBlockInput!): Block!
@@ -85,7 +91,6 @@ type Page {
 
 type Query {
   block(id: Int!): Block!
-  book(id: Int!): Book!
   books: [Book!]!
   categories: [Category!]!
   category(id: Int!): Category!
@@ -101,8 +106,15 @@ input UpdateBlockInput {
 }
 
 input UpdateBookInput {
-  id: Int!
+  author: String
+  categories: [String!]
+  description: String
+  id: ID!
+  image: String
+  language: String
+  tags: [String!]
   title: String
+  visibility: Boolean
 }
 
 input UpdateCategoryInput {
