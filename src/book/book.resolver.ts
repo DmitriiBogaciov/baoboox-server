@@ -6,6 +6,7 @@ import { UpdateBookInput } from './dto/update-book.input';
 import { UseGuards } from '@nestjs/common';
 import { AuthGuard } from '../auth/AuthGuard';
 import { UserService } from 'src/user/user.service';
+import { ID } from 'graphql-ws';
 
 @Resolver(() => Book)
 export class BookResolver {
@@ -25,14 +26,15 @@ export class BookResolver {
     return this.bookService.findAll();
   }
 
-  // @Query(() => Book, { name: 'book' })
-  // findOne(@Args('id', { type: () => Int }) id: number) {
-  //   return this.bookService.findOne(id);
-  // }
+  @Query(() => Book, { name: 'book' })
+  findOne(@Args('id', { type: () => String }) id: ID) {
+    return this.bookService.findOne(id);
+  }
 
   @Mutation(() => Book)
-  updateBook(@Args('updateBookInput') updateBookInput: UpdateBookInput) {
-    return this.bookService.update(updateBookInput.id, updateBookInput);
+  @UseGuards(new AuthGuard(['update:book']))
+  updateBook(@Args('updateBookInput') updateBookInput: UpdateBookInput, @Context() context: any) {
+    return this.bookService.update(updateBookInput.id, updateBookInput, context.req.auth.payload.sub);
   }
 
   // @Mutation(() => Book)

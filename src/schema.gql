@@ -91,6 +91,7 @@ type Page {
 
 type Query {
   block(id: Int!): Block!
+  book(id: String!): Book!
   books: [Book!]!
   categories: [Category!]!
   category(id: Int!): Category!
