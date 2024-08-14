@@ -72,6 +72,7 @@ type Mutation {
   createCategory(createCategoryInput: CreateCategoryInput!): Category!
   createPage(createPageInput: CreatePageInput!): Page!
   removeBlock(id: Int!): Block!
+  removeBook(id: String!): RemoveRes!
   removeCategory(id: Int!): Category!
   removePage(id: Int!): Page!
   updateBlock(updateBlockInput: UpdateBlockInput!): Block!
@@ -93,9 +94,15 @@ type Query {
   block(id: Int!): Block!
   book(id: String!): Book!
   books: [Book!]!
+  booksByCategory(id: String!): [Book!]!
   categories: [Category!]!
   category(id: Int!): Category!
   page(id: Int!): Page!
+}
+
+type RemoveRes {
+  acknowledged: Boolean!
+  deletedCount: Int!
 }
 
 input UpdateBlockInput {

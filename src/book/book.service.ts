@@ -36,8 +36,13 @@ export class BookService {
     return this.bookModel.find().exec();
   }
 
-  findOne(id: ID) {
+  async findOne(id: ID) {
     return this.bookModel.findById(id).exec();
+  }
+
+  async findByCategory(id: ID) {
+    const books = await this.bookModel.find({ categories: id})
+    return books;
   }
 
   async update(id: string, updateBookInput: UpdateBookInput, userId: ID): Promise<Book> {
@@ -77,7 +82,9 @@ export class BookService {
     }
   }
 
-  // remove(id: number) {
-  //   return `This action removes a #${id} book`;
-  // }
+  async remove(id: ID) {
+    const res = await this.bookModel.deleteOne({ _id: id});
+    console.log(res)
+    return res;
+  }
 }
