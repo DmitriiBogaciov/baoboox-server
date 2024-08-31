@@ -6,7 +6,7 @@ type Block {
   _id: ID!
   content: String
   order: Float!
-  page: Page!
+  page: ID!
   type: String
 }
 
@@ -26,13 +26,14 @@ type Book {
 
 type Category {
   _id: ID!
+  description: String
   name: String!
   parentId: ID
 }
 
 input CreateBlockInput {
   content: String
-  order: Float!
+  order: Float
   page: ID!
   type: String
 }
@@ -49,6 +50,7 @@ input CreateBookInput {
 }
 
 input CreateCategoryInput {
+  description: String
   name: String!
   parentId: ID
 }
@@ -71,10 +73,10 @@ type Mutation {
   createBook(createBookInput: CreateBookInput!): Book!
   createCategory(createCategoryInput: CreateCategoryInput!): Category!
   createPage(createPageInput: CreatePageInput!): Page!
-  removeBlock(id: Int!): Block!
+  removeBlock(id: String!): RemoveRes!
   removeBook(id: String!): RemoveRes!
-  removeCategory(id: Int!): Category!
-  removePage(id: Int!): Page!
+  removeCategory(id: String!): RemoveRes!
+  removePage(id: String!): RemoveRes!
   updateBlock(updateBlockInput: UpdateBlockInput!): Block!
   updateBook(updateBookInput: UpdateBookInput!): Book!
   updateCategory(updateCategoryInput: UpdateCategoryInput!): Category!
@@ -91,13 +93,17 @@ type Page {
 }
 
 type Query {
-  block(id: Int!): Block!
+  block(id: String!): Block!
+  blocks: [Block!]!
   book(id: String!): Book!
   books: [Book!]!
   booksByCategory(id: String!): [Book!]!
+  booksForAuthor: [Book!]!
   categories: [Category!]!
-  category(id: Int!): Category!
-  page(id: Int!): Page!
+  category(id: String!): Category!
+  page(id: String!): Page!
+  pages: [Page!]!
+  pagesForBook(id: String!): Page!
 }
 
 type RemoveRes {
@@ -107,7 +113,7 @@ type RemoveRes {
 
 input UpdateBlockInput {
   content: String
-  id: Int!
+  id: ID!
   order: Float
   page: ID
   type: String
@@ -126,14 +132,15 @@ input UpdateBookInput {
 }
 
 input UpdateCategoryInput {
-  id: Int!
+  description: String
+  id: ID!
   name: String
   parentId: ID
 }
 
 input UpdatePageInput {
   bookId: ID
-  id: Int!
+  id: ID!
   order: Int
   parentId: ID
   title: String

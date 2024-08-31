@@ -7,6 +7,11 @@ export class CreateCategoryInput {
   @IsString()
   name: string;
 
+  @Field({ nullable: true })
+  @IsString()
+  @IsOptional()
+  description: string;
+
   @Field(() => ID, { nullable: true })
   @IsOptional()
   readonly parentId?: string;

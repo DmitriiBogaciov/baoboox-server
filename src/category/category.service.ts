@@ -3,15 +3,17 @@ import { CreateCategoryInput } from './dto/create-category.input';
 import { UpdateCategoryInput } from './dto/update-category.input';
 import { InjectModel, InjectConnection } from '@nestjs/mongoose';
 import { Category, CategoryDocument } from './entities/category.entity';
-import { Model, Connection } from 'mongoose';   
+import { Model, Connection, Types } from 'mongoose';
+import { ID } from 'graphql-ws';
+import { RemoveRes } from 'src/utils/classes'
 
 @Injectable()
 export class CategoryService {
   constructor(
     @InjectModel(Category.name) private categoryModel: Model<CategoryDocument>,
     @InjectConnection() private connection: Connection
-  ) {}
-  
+  ) { }
+
   create(createCategoryInput: CreateCategoryInput) {
     const createdCategory = new this.categoryModel(createCategoryInput);
     return createdCategory.save();
@@ -25,24 +27,37 @@ export class CategoryService {
     return this.categoryModel.find({ _id: { $in: categoryIds } }).exec();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} category`;
+  findOne(id: ID) {
+    return this.categoryModel.findOne({ _id: id }).exec();
   }
 
-  update(id: number, updateCategoryInput: UpdateCategoryInput) {
-    return `This action updates a #${id} category`;
-  }
+  update(id: string, updateCategoryInput: UpdateCategoryInput) {
 
-  remove(id: number) {
-    return `This action removes a #${id} category`;
-  }
+    const catId = new Types.ObjectId(id);
 
-  async checkCategoriesExist(categoryIds: string[]): Promise<void> {
-    for (const categoryId of categoryIds) {
-      const categoryExists = await this.categoryModel.exists({ _id: categoryId });
-      if (!categoryExists) {
-        throw new NotFoundException(`Category with ID ${categoryId} not found`);
-      }
+    const newCat = this.categoryModel.findOneAndUpdate(
+      { _id: catId },
+      { $set: updateCategoryInput },
+      { new: true }
+    )
+
+    if (!newCat) {
+      throw new NotFoundException("The category doesn't exist!")
     }
+
+    return newCat;
   }
+
+  remove(id: String) {
+    return this.categoryModel.deleteOne({ _id: id });
+  }
+
+  // async checkCategoriesExist(categoryIds: string[]): Promise<void> {
+  //   for (const categoryId of categoryIds) {
+  //     const categoryExists = await this.categoryModel.exists({ _id: categoryId });
+  //     if (!categoryExists) {
+  //       throw new NotFoundException(`Category with ID ${categoryId} not found`);
+  //     }
+  //   }
+  // }
 }

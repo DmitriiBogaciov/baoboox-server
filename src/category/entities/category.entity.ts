@@ -15,6 +15,10 @@ export class Category {
   @Prop({ required: true })
   name: string;
 
+  @Field({ nullable: true })
+  @Prop({ required: false, default: null })
+  description: string;
+
   @Field(() => ID, { nullable: true })
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Category', default: null })
   parentId: Category | null;

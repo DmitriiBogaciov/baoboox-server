@@ -7,16 +7,7 @@ import { UseGuards } from '@nestjs/common';
 import { AuthGuard } from '../auth/AuthGuard';
 import { UserService } from 'src/user/user.service';
 import { ID } from 'graphql-ws';
-
-@ObjectType()
-class RemoveRes{
-  @Field()
-  acknowledged: boolean 
-  
-  @Field(() => Int)
-  deletedCount: number
-}
-
+import {RemoveRes} from 'src/utils/classes'
 
 @Resolver(() => Book)
 export class BookResolver {
@@ -44,6 +35,12 @@ export class BookResolver {
   @Query(() => [Book], { name: 'booksByCategory'})
   findByCategory(@Args('id', { type: () => String}) id: ID) {
     return this.bookService.findByCategory(id);
+  }
+
+  @Query(() => [Book], { name: 'booksForAuthor'})
+  @UseGuards(new AuthGuard([]))
+  findForAuthor(@Context() context: any) {
+    return this.bookService.findForAuthor(context.req.auth.payload.sub);
   }
 
   @Mutation(() => Book)

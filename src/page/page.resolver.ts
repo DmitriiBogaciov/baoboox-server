@@ -3,6 +3,8 @@ import { PageService } from './page.service';
 import { Page } from './entities/page.entity';
 import { CreatePageInput } from './dto/create-page.input';
 import { UpdatePageInput } from './dto/update-page.input';
+import { ID } from 'graphql-ws';
+import { RemoveRes } from 'src/utils/classes';
 
 @Resolver(() => Page)
 export class PageResolver {
@@ -13,14 +15,21 @@ export class PageResolver {
     return this.pageService.create(createPageInput);
   }
 
-  @Query(() => [Page], { name: 'page' })
+  @Query(() => [Page], { name: 'pages' })
   findAll() {
     return this.pageService.findAll();
   }
 
   @Query(() => Page, { name: 'page' })
-  findOne(@Args('id', { type: () => Int }) id: number) {
+  findOne(@Args('id', { type: () => String }) id: ID) {
     return this.pageService.findOne(id);
+  }
+
+  @Query(() => Page, { name: 'pagesForBook' })
+  async getPagesForBook(@Args('id', { type: () => String }) id: ID) {
+    const response = await this.pageService.getPagesForBook(id);
+    console.log(response)
+    return response;
   }
 
   @Mutation(() => Page)
@@ -28,8 +37,8 @@ export class PageResolver {
     return this.pageService.update(updatePageInput.id, updatePageInput);
   }
 
-  @Mutation(() => Page)
-  removePage(@Args('id', { type: () => Int }) id: number) {
+  @Mutation(() => RemoveRes)
+  removePage(@Args('id', { type: () => String }) id: ID) {
     return this.pageService.remove(id);
   }
 }

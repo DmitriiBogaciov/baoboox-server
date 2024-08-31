@@ -13,20 +13,20 @@ export class Block {
   _id: string
 
   @Field({nullable: true})
-  @Prop({required: false})
+  @Prop({required: false, default: null})
   type?: string
 
   @Field()
-  @Prop({required: true})
+  @Prop({required: true, default: null})
   order: number
 
   @Field(() => String, { nullable: true }) 
-  @Prop({ type: mongoose.Schema.Types.Mixed, required: false })
+  @Prop({ type: mongoose.Schema.Types.Mixed, required: false, default: null })
   content: any;
 
-  @Field(() => Page)
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Page' })
-  page: Page;
+  @Field(() => ID)
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Page', required: true })
+  page: Page | null;
 }
 
 export const BlockSchema = SchemaFactory.createForClass(Block)

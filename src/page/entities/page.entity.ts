@@ -11,25 +11,25 @@ export type PageDocument = HydratedDocument<Page>
 export class Page {
   @Field(() => ID)
   _id: string;
-  
-  @Field({ nullable: true})
-  @Prop({default: 'Untitled', required: false})
+
+  @Field({ nullable: true })
+  @Prop({ default: 'Untitled', required: false })
   title: string;
 
-  @Field(() => Boolean, {nullable: true})
-  @Prop({default: false, required: false})
+  @Field(() => Boolean, { nullable: true })
+  @Prop({ default: false, required: false })
   visibility: boolean;
 
-  @Field(() => ID, {nullable: true})
-  @Prop({type: mongoose.Schema.Types.ObjectId, ref: 'Page', default: null, required: false})
+  @Field(() => ID, { nullable: true })
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Page', default: null, required: false })
   parentId: Page | null;
 
   @Field(() => ID)
-  @Prop({type: mongoose.Schema.Types.ObjectId, ref: 'Book'})
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Book' })
   bookId: Book | null;
 
   @Field(() => Int)
-  @Prop({ required: true })
+  @Prop({ required: false, default: null })
   order: number;
 }
 

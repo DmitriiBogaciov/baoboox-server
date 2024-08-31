@@ -1,8 +1,10 @@
-import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Int, } from '@nestjs/graphql';
 import { BlockService } from './block.service';
 import { Block } from './entities/block.entity';
 import { CreateBlockInput } from './dto/create-block.input';
 import { UpdateBlockInput } from './dto/update-block.input';
+import { ID } from 'graphql-ws';
+import { RemoveRes } from 'src/utils/classes';
 
 @Resolver(() => Block)
 export class BlockResolver {
@@ -13,13 +15,13 @@ export class BlockResolver {
     return this.blockService.create(createBlockInput);
   }
 
-  @Query(() => [Block], { name: 'block' })
+  @Query(() => [Block], { name: 'blocks' })
   findAll() {
     return this.blockService.findAll();
   }
 
   @Query(() => Block, { name: 'block' })
-  findOne(@Args('id', { type: () => Int }) id: number) {
+  findOne(@Args('id', { type: () => String }) id: ID) {
     return this.blockService.findOne(id);
   }
 
@@ -28,8 +30,8 @@ export class BlockResolver {
     return this.blockService.update(updateBlockInput.id, updateBlockInput);
   }
 
-  @Mutation(() => Block)
-  removeBlock(@Args('id', { type: () => Int }) id: number) {
+  @Mutation(() => RemoveRes)
+  removeBlock(@Args('id', { type: () => String }) id: ID) {
     return this.blockService.remove(id);
   }
 }

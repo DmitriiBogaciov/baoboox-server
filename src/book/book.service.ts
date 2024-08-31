@@ -41,7 +41,12 @@ export class BookService {
   }
 
   async findByCategory(id: ID) {
-    const books = await this.bookModel.find({ categories: id})
+    const books = await this.bookModel.find({ categories: id })
+    return books;
+  }
+
+  async findForAuthor(userId: ID) {
+    const books = await this.bookModel.find({ author: userId });
     return books;
   }
 
@@ -57,22 +62,14 @@ export class BookService {
         }
       }
 
-      const book = await this.bookModel.findById(objectId).exec();
-      if (!book) {
-        throw new NotFoundException('Book not found');
-      }
-      if (book.author.toString() !== userId) {
-        throw new ForbiddenException('You do not have permission to update this book');
-      }
-
       const updatedBook = await this.bookModel.findOneAndUpdate(
-        { _id: objectId },
+        { _id: objectId, author: userId },
         { $set: updateBookInput },
         { new: true }
       ).exec();
 
       if (!updatedBook) {
-        throw new NotFoundException('Book not found');
+        throw new NotFoundException('Book not found or you do not have permission to update this book');
       }
 
       return updatedBook;
@@ -83,8 +80,7 @@ export class BookService {
   }
 
   async remove(id: ID) {
-    const res = await this.bookModel.deleteOne({ _id: id});
-    console.log(res)
+    const res = await this.bookModel.deleteOne({ _id: id });
     return res;
   }
 }

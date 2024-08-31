@@ -5,12 +5,15 @@ import { IsString, IsBoolean, IsArray, IsOptional } from 'class-validator';
 export class CreateBlockInput {
   @Field({nullable: true})
   @IsString()
+  @IsOptional()
   readonly type: string
 
-  @Field()
+  @Field({ nullable: true })
+  @IsOptional()
   readonly order: number
 
   @Field(() => String, { nullable: true })
+  @IsOptional()
   readonly content: any;
 
   @Field(() => ID)

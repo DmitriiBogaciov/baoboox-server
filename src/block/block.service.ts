@@ -4,6 +4,7 @@ import { UpdateBlockInput } from './dto/update-block.input';
 import { Block, BlockDocument } from './entities/block.entity';
 import { InjectModel, InjectConnection } from '@nestjs/mongoose';
 import { Model, Connection } from 'mongoose'
+import { ID } from 'graphql-ws';
 
 @Injectable()
 export class BlockService {
@@ -18,18 +19,25 @@ export class BlockService {
   }
 
   findAll() {
-    return `This action returns all block`;
+    return this.blockModel.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} block`;
+  findOne(id: String) {
+    return this.blockModel.findById(id);
   }
 
-  update(id: number, updateBlockInput: UpdateBlockInput) {
-    return `This action updates a #${id} block`;
+  update(id: String, updateBlockInput: UpdateBlockInput) {
+
+    const newBlock = this.blockModel.findByIdAndUpdate(
+      {_id: id},
+      {$set: updateBlockInput},
+      {new: true}
+    )
+
+    return newBlock;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} block`;
+  remove(id: ID) {
+    return this.blockModel.deleteOne({_id: id});
   }
 }
