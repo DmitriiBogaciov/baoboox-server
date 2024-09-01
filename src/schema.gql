@@ -103,7 +103,7 @@ type Query {
   category(id: String!): Category!
   page(id: String!): Page!
   pages: [Page!]!
-  pagesForBook(id: String!): Page!
+  pagesForBook(id: String!): [Page!]!
 }
 
 type RemoveRes {

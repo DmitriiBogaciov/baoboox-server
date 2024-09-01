@@ -16,8 +16,10 @@ export class PageResolver {
   }
 
   @Query(() => [Page], { name: 'pages' })
-  findAll() {
-    return this.pageService.findAll();
+  async findAll() {
+    const result = await this.pageService.findAll();
+    console.log(result);
+    return result;
   }
 
   @Query(() => Page, { name: 'page' })
@@ -25,7 +27,7 @@ export class PageResolver {
     return this.pageService.findOne(id);
   }
 
-  @Query(() => Page, { name: 'pagesForBook' })
+  @Query(() => [Page], { name: 'pagesForBook' })
   async getPagesForBook(@Args('id', { type: () => String }) id: ID) {
     const response = await this.pageService.getPagesForBook(id);
     console.log(response)
