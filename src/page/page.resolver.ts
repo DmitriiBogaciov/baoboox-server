@@ -30,13 +30,14 @@ export class PageResolver {
   @Query(() => [Page], { name: 'pagesForBook' })
   async getPagesForBook(@Args('id', { type: () => String }) id: ID) {
     const response = await this.pageService.getPagesForBook(id);
-    console.log(response)
     return response;
   }
 
   @Mutation(() => Page)
-  updatePage(@Args('updatePageInput') updatePageInput: UpdatePageInput) {
-    return this.pageService.update(updatePageInput.id, updatePageInput);
+  async updatePage(@Args('updatePageInput') updatePageInput: UpdatePageInput) {
+    const response = await this.pageService.update(updatePageInput.id, updatePageInput);
+    console.log(response);
+    return response;
   }
 
   @Mutation(() => RemoveRes)

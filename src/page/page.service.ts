@@ -30,7 +30,6 @@ export class PageService {
 
   async getPagesForBook(id: string){
     const response = await this.pageModel.find({bookId: id})
-    // console.log(response)
     return response;
   }
 
