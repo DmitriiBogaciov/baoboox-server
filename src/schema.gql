@@ -45,7 +45,7 @@ input CreateBookInput {
   image: String
   language: String
   tags: [String!]
-  title: String!
+  title: String
   visibility: Boolean
 }
 

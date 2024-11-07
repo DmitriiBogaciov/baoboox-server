@@ -21,6 +21,7 @@ export class BookService {
     try {
       const bookData = {
         ...createBookInput,
+        title: 'Undefined',
         author: userId
       }
 

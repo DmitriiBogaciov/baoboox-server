@@ -3,7 +3,7 @@ import { IsString, IsBoolean, IsArray, IsOptional } from 'class-validator';
 
 @InputType()
 export class CreateBookInput {
-  @Field()
+  @Field({ nullable: true})
   @IsString()
   readonly title: string;
 
