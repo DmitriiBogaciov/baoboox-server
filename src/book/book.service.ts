@@ -51,7 +51,7 @@ export class BookService {
     return books;
   }
 
-  async update(id: string, updateBookInput: UpdateBookInput, userId: ID): Promise<Book> {
+  async update(id: ID, updateBookInput: UpdateBookInput, userId: ID): Promise<Book> {
     try {
 
       const objectId = new Types.ObjectId(id);
