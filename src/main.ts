@@ -18,7 +18,7 @@ async function bootstrap() {
   // });
   
   app.enableCors();
-  await app.listen(4000);
+  await app.listen(process.env.PORT || 4000);
   Logger.log(`Server is running on http://localhost:4000`, 'Bootstrap');
 }
 
