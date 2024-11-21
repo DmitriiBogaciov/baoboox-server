@@ -5,6 +5,8 @@ import { CreatePageInput } from './dto/create-page.input';
 import { UpdatePageInput } from './dto/update-page.input';
 import { ID } from 'graphql-ws';
 import { RemoveRes } from 'src/utils/classes';
+import { AuthGuard } from '../auth/AuthGuard';
+import { UseGuards } from '@nestjs/common';
 
 @Resolver(() => Page)
 export class PageResolver {
@@ -41,6 +43,7 @@ export class PageResolver {
   }
 
   @Mutation(() => RemoveRes)
+  @UseGuards(new AuthGuard([]))
   removePage(@Args('id', { type: () => String }) id: ID) {
     return this.pageService.remove(id);
   }
