@@ -1,4 +1,4 @@
-import { Field, Int, ObjectType } from "@nestjs/graphql"
+import { Field, ID, Int, ObjectType } from "@nestjs/graphql"
 
 @ObjectType()
 export class RemoveRes{
@@ -7,4 +7,7 @@ export class RemoveRes{
   
   @Field(() => Int)
   deletedCount: number
+
+  @Field(() => ID)
+  bookId: string
 }

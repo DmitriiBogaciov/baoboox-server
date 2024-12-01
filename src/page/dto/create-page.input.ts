@@ -19,7 +19,7 @@ export class CreatePageInput {
   @Field(() => ID)
   bookId: string;
 
-  @Field(() => Int)
+  @Field(() => Int, {nullable: true})
   @IsInt()
   order: number;
 }

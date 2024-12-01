@@ -22,7 +22,7 @@ export class Page {
 
   @Field(() => ID, { nullable: true })
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Page', default: null, required: false })
-  parentId: Page | null;
+  parentId: string | null;
 
   @Field(() => ID)
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Book' })
@@ -31,6 +31,9 @@ export class Page {
   @Field(() => Int)
   @Prop({ required: false, default: null })
   order: number;
+
+  @Field(() => [Page], {nullable: true})
+  children: Page[] | null;
 }
 
 export const PageSchema = SchemaFactory.createForClass(Page);

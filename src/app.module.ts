@@ -14,6 +14,7 @@ import { BlockModule } from './block/block.module';
 import { AuthModule } from './auth/auth.module';
 import { DevtoolsModule } from '@nestjs/devtools-integration';
 import { HttpModule } from '@nestjs/axios';
+import { EventsModule } from './events/events.module';
 
 @Module({
   imports: [
@@ -47,8 +48,9 @@ import { HttpModule } from '@nestjs/axios';
     BlockModule,
     AuthModule,
     HttpModule,
+    EventsModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService]
 })
 export class AppModule {}

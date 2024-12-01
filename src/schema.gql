@@ -57,7 +57,7 @@ input CreateCategoryInput {
 
 input CreatePageInput {
   bookId: ID!
-  order: Int!
+  order: Int
   parentId: ID
   title: String
   visibility: Boolean
@@ -76,7 +76,7 @@ type Mutation {
   removeBlock(id: String!): RemoveRes!
   removeBook(id: String!): RemoveRes!
   removeCategory(id: String!): RemoveRes!
-  removePage(id: String!): RemoveRes!
+  removePage(id: String!): Page!
   updateBlock(updateBlockInput: UpdateBlockInput!): Block!
   updateBook(updateBookInput: UpdateBookInput!): Book!
   updateCategory(updateCategoryInput: UpdateCategoryInput!): Category!
@@ -86,6 +86,7 @@ type Mutation {
 type Page {
   _id: ID!
   bookId: ID!
+  children: [Page!]
   order: Int!
   parentId: ID
   title: String
@@ -101,13 +102,15 @@ type Query {
   booksForAuthor: [Book!]!
   categories: [Category!]!
   category(id: String!): Category!
-  page(id: String!): Page!
+  childrenForPage(parentId: String!): [Page!]!
+  page(id: String!): Page
   pages: [Page!]!
   pagesForBook(id: String!): [Page!]!
 }
 
 type RemoveRes {
   acknowledged: Boolean!
+  bookId: ID!
   deletedCount: Int!
 }
 
