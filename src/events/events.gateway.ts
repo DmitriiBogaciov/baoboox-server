@@ -57,7 +57,7 @@ export class EventsGateway
     // this.logger.log(`Fetching pages for book: ${bookId}`);
     const pagesTree = await this.pageService.getPagesForBook(bookId);
     // this.logger.log('PagesTree', pagesTree);
-    client.emit('pages_tree', pagesTree); // Отправляем дерево страниц клиенту
+    client.emit('pages_flat', pagesTree); // Отправляем дерево страниц клиенту
   }
 
   // private emitToAll(event: string, data: any) {
@@ -80,7 +80,8 @@ export class EventsGateway
 
   // Отправка события об обновлении страницы только клиентам в комнате
   async notifyPageUpdated(updatedPage: any) {
-    this.logger.log(`Page updated: ${updatedPage._id}`);
-    this.server.to(updatedPage.bookId).emit('page_updated', updatedPage); // Отправляем только в комнату bookId
+    const bookId = updatedPage.bookId.toString();
+    this.logger.log(`Page updated: ${updatedPage}`);
+    this.server.to(bookId).emit('page_updated', updatedPage); // Отправляем только в комнату bookId
   }
 }

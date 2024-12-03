@@ -43,7 +43,6 @@ export class PageResolver {
   @UseGuards(new AuthGuard([]))
   async updatePage(@Args('updatePageInput') updatePageInput: UpdatePageInput) {
     const response = await this.pageService.update(updatePageInput.id, updatePageInput);
-    console.log(response);
     return response;
   }
 

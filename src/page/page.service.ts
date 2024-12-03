@@ -61,45 +61,74 @@ export class PageService {
 
     const pages = await this.pageModel.find({ bookId }).exec();
 
-    const map: Record<string, Page & { children: Page[] }> = {};
-    const tree: (Page & { children: Page[] })[] = [];
-
-    pages.forEach((page) => {
-      map[page._id] = { ...page.toObject(), children: [] };
-    });
-
-    pages.forEach((page) => {
-      if (page.parentId) {
-        map[page.parentId]?.children.push(map[page._id]);
-      } else {
-        tree.push(map[page._id]);
-      }
-    });
-
-    return tree;
+    return pages;
   }
 
   async getChildren(parentId: string): Promise<Page[]> {
     return await this.pageModel.find({ parentId }).exec();
   }
 
-  update(id: String, updatePageInput: UpdatePageInput) {
+  async update(id: String, updatePageInput: UpdatePageInput) {
 
-    const newPage = this.pageModel.findOneAndUpdate(
+    const newPage = await this.pageModel.findOneAndUpdate(
       { _id: id },
       { $set: updatePageInput },
       { new: true }
     )
+
+    // console.log("New page: ", newPage)
+    this.eventsGateway.notifyPageUpdated(newPage)
 
     return newPage;
   }
 
   async remove(id: ID): Promise<Page> {
     try {
-      const response = await this.pageModel.findByIdAndDelete(id);
-      this.eventsGateway.notifyPageRemoved(response._id, response.bookId.toString())
-      return response;
-    } catch(error) {
+      // Найти страницу, которую нужно удалить
+      const rootPage = await this.pageModel.findById(id).exec();
+      if (!rootPage) {
+        throw new Error(`Page with id ${id} not found`);
+      }
+
+      // Используем MongoDB `$graphLookup` для нахождения всех связанных страниц
+      const pagesToDelete = await this.pageModel.aggregate([
+        {
+          $match: { _id: new Types.ObjectId(id) }, // Начинаем с корневой страницы
+        },
+        {
+          $graphLookup: {
+            from: "pages", // Коллекция с данными страниц
+            startWith: "$_id",
+            connectFromField: "_id",
+            connectToField: "parentId",
+            as: "subPages", // Результат всех вложенных страниц
+          },
+        },
+        {
+          $project: {
+            allPages: {
+              $concatArrays: [["$_id"], "$subPages._id"], // Собираем корневую и все подстраницы
+            },
+          },
+        },
+      ]);
+
+      // Получаем список всех связанных ID страниц
+      const pageIds = pagesToDelete[0]?.allPages || [];
+      if (pageIds.length === 0) {
+        throw new Error(`No pages found for deletion`);
+      }
+
+      // Удаляем все страницы в одном запросе
+      await this.pageModel.deleteMany({ _id: { $in: pageIds } });
+
+      // Уведомляем клиентов через WebSocket
+      pageIds.forEach((pageId) => {
+        this.eventsGateway.notifyPageRemoved(pageId.toString(), rootPage.bookId.toString());
+      });
+
+      return rootPage;
+    } catch (error) {
       throw error;
     }
   }
