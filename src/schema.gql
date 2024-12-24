@@ -102,7 +102,6 @@ type Query {
   booksForAuthor: [Book!]!
   categories: [Category!]!
   category(id: String!): Category!
-  childrenForPage(parentId: String!): [Page!]!
   page(id: String!): Page
   pages: [Page!]!
   pagesForBook(id: String!): [Page!]!
@@ -112,6 +111,10 @@ type RemoveRes {
   acknowledged: Boolean!
   bookId: ID!
   deletedCount: Int!
+}
+
+type Subscription {
+  pageCreated: Page!
 }
 
 input UpdateBlockInput {

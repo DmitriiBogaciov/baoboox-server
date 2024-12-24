@@ -3,14 +3,13 @@ import { PageService } from './page.service';
 import { PageResolver } from './page.resolver';
 import { Page, PageSchema } from './entities/page.entity';
 import { MongooseModule } from '@nestjs/mongoose';
-import { EventsModule } from 'src/events/events.module';
+import { PageGateway } from './page.gateway';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{name: Page.name, schema: PageSchema}]),
-    forwardRef(() => EventsModule),
   ],
-  providers: [PageResolver, PageService],
+  providers: [PageResolver, PageService, PageGateway],
   exports: [PageService]
 })
 export class PageModule {}

@@ -1,20 +1,24 @@
-import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Subscription } from '@nestjs/graphql';
 import { PageService } from './page.service';
 import { Page } from './entities/page.entity';
 import { CreatePageInput } from './dto/create-page.input';
 import { UpdatePageInput } from './dto/update-page.input';
 import { ID } from 'graphql-ws';
-// import { RemoveRes } from 'src/utils/classes';
 import { AuthGuard } from '../auth/AuthGuard';
 import { UseGuards } from '@nestjs/common';
+import { pubsub } from 'src/utils/pubsub.provider'
 
 @Resolver(() => Page)
 export class PageResolver {
   constructor(private readonly pageService: PageService) { }
 
   @Mutation(() => Page)
-  createPage(@Args('createPageInput') createPageInput: CreatePageInput) {
-    return this.pageService.create(createPageInput);
+  async createPage(@Args('createPageInput') createPageInput: CreatePageInput) {
+    const newPage = await this.pageService.create(createPageInput);
+
+    await pubsub.publish('pageCreated', { pageCreated: newPage });
+    
+    return newPage;
   }
 
   @Query(() => [Page], { name: 'pages' })
@@ -34,10 +38,6 @@ export class PageResolver {
     return response;
   }
 
-  @Query(() => [Page], { name: 'childrenForPage' })
-  async getChildren(@Args('parentId') parentId: string): Promise<Page[]> {
-    return this.pageService.getChildren(parentId);
-  }
 
   @Mutation(() => Page)
   @UseGuards(new AuthGuard([]))
@@ -50,5 +50,11 @@ export class PageResolver {
   // @UseGuards(new AuthGuard([]))
   async removePage(@Args('id', { type: () => String }) id: ID) {
     return await this.pageService.remove(id);
+  }
+
+  @Subscription(() => Page)
+  pageCreated() {
+    // Возвращаем итератор, который "слушает" события 'pageCreated'
+    return pubsub.asyncIterator('pageCreated');
   }
 }

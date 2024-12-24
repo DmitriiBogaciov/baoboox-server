@@ -1,130 +1,133 @@
-import { Inject, Injectable, BadRequestException, forwardRef } from '@nestjs/common';
-import { CreatePageInput } from './dto/create-page.input';
+import {
+  Injectable,
+  BadRequestException,
+  forwardRef,
+  Inject,
+} from '@nestjs/common';
+import { Model, Connection, Types } from 'mongoose';
 import { InjectModel, InjectConnection } from '@nestjs/mongoose';
-import { UpdatePageInput } from './dto/update-page.input';
 import { Page, PageDocument } from './entities/page.entity';
-import { Model, Connection, Types } from 'mongoose'
+import { CreatePageInput } from './dto/create-page.input';
+import { UpdatePageInput } from './dto/update-page.input';
 import { ID } from 'graphql-ws';
-import { EventsGateway } from 'src/events/events.gateway';
+import { PageGateway } from './page.gateway';
 
 @Injectable()
 export class PageService {
   constructor(
     @InjectModel(Page.name) private pageModel: Model<PageDocument>,
     @InjectConnection() private connection: Connection,
-    @Inject(forwardRef(() => EventsGateway))
-    private eventsGateway: EventsGateway
-  ) { }
+    @Inject(forwardRef(() => PageGateway))
+    private readonly pageGateway: PageGateway,
+  ) {}
 
+  /**
+   * Создание страницы с автогенерацией order
+   */
   async create(createPageInput: CreatePageInput) {
-    // Найти максимальный порядок для данной книги
+    // Находим максимальный order для данной книги
     const maxOrderPage = await this.pageModel
       .findOne({ bookId: createPageInput.bookId })
-      .sort({ order: -1 }) // Сортировка по `order` в убывающем порядке
+      .sort({ order: -1 })
       .exec();
 
-    // Установить порядок для новой страницы
-    const newOrder = maxOrderPage ? maxOrderPage.order + 1 : 1; // Если страниц нет, порядок будет 1
-    const createdPage = new this.pageModel({ ...createPageInput, order: newOrder });
+    const newOrder = maxOrderPage ? maxOrderPage.order + 1 : 1;
+    const createdPage = new this.pageModel({
+      ...createPageInput,
+      order: newOrder,
+    });
 
-    this.eventsGateway.notifyPageAdded(createdPage);
-    return createdPage.save();
+    // Сохраняем в БД
+    const savedPage = await createdPage.save();
+
+    // Оповещаем всех в книге о том, что страница добавлена
+    this.pageGateway.notifyPageAdded(savedPage);
+
+    return savedPage;
   }
 
   async findAll() {
-    const response = await this.pageModel.find()
-    // console.log(response)
-    return response;
+    return this.pageModel.find().exec();
   }
 
   async findOne(id: string): Promise<Page | null> {
     try {
-      const page = await this.pageModel.findById(id).exec();
-
-      if (!page) {
-        return null;
-      }
-
-      return page;
+      return await this.pageModel.findById(id).exec();
     } catch (error) {
-      console.error(`Error finding page with id ${id}:`, error);
-      throw new Error(`Failed to find page: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(`Failed to find page: ${error.message}`);
     }
   }
 
   async getPagesForBook(bookId: string): Promise<Page[]> {
-    // Проверка валидности ObjectId
     if (!Types.ObjectId.isValid(bookId)) {
-      console.log(`Invalid bookId: ${bookId}`)
       throw new BadRequestException(`Invalid bookId: ${bookId}`);
     }
-
-    const pages = await this.pageModel.find({ bookId }).exec();
-
-    return pages;
+    return this.pageModel.find({ bookId }).exec();
   }
 
-  async getChildren(parentId: string): Promise<Page[]> {
-    return await this.pageModel.find({ parentId }).exec();
-  }
-
-  async update(id: String, updatePageInput: UpdatePageInput) {
-
+  /**
+   * Обновление страницы, потом рассылаем событие
+   */
+  async update(id: string, updatePageInput: UpdatePageInput) {
     const newPage = await this.pageModel.findOneAndUpdate(
       { _id: id },
       { $set: updatePageInput },
-      { new: true }
-    )
+      { new: true },
+    );
 
-    // console.log("New page: ", newPage)
-    this.eventsGateway.notifyPageUpdated(newPage)
-
+    if (newPage) {
+      this.pageGateway.notifyPageUpdated(newPage);
+    }
     return newPage;
   }
 
+  /**
+   * Удаление страницы (и рекурсивных подстраниц).
+   * После удаления оповещаем все клиенты этой книги.
+   */
   async remove(id: ID): Promise<Page> {
     try {
-      // Найти страницу, которую нужно удалить
       const rootPage = await this.pageModel.findById(id).exec();
       if (!rootPage) {
         throw new Error(`Page with id ${id} not found`);
       }
 
-      // Используем MongoDB `$graphLookup` для нахождения всех связанных страниц
+      // Ищем рекурсивно все подстраницы (используем $graphLookup)
       const pagesToDelete = await this.pageModel.aggregate([
         {
-          $match: { _id: new Types.ObjectId(id) }, // Начинаем с корневой страницы
+          $match: { _id: new Types.ObjectId(id) },
         },
         {
           $graphLookup: {
-            from: "pages", // Коллекция с данными страниц
-            startWith: "$_id",
-            connectFromField: "_id",
-            connectToField: "parentId",
-            as: "subPages", // Результат всех вложенных страниц
+            from: 'pages',
+            startWith: '$_id',
+            connectFromField: '_id',
+            connectToField: 'parentId',
+            as: 'subPages',
           },
         },
         {
           $project: {
             allPages: {
-              $concatArrays: [["$_id"], "$subPages._id"], // Собираем корневую и все подстраницы
+              $concatArrays: [['$_id'], '$subPages._id'],
             },
           },
         },
       ]);
 
-      // Получаем список всех связанных ID страниц
       const pageIds = pagesToDelete[0]?.allPages || [];
       if (pageIds.length === 0) {
         throw new Error(`No pages found for deletion`);
       }
 
-      // Удаляем все страницы в одном запросе
       await this.pageModel.deleteMany({ _id: { $in: pageIds } });
 
-      // Уведомляем клиентов через WebSocket
+      // Уведомляем клиентов о каждой удалённой странице
       pageIds.forEach((pageId) => {
-        this.eventsGateway.notifyPageRemoved(pageId.toString(), rootPage.bookId.toString());
+        this.pageGateway.notifyPageRemoved(
+          pageId.toString(),
+          rootPage.bookId.toString(),
+        );
       });
 
       return rootPage;

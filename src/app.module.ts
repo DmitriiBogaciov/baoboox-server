@@ -14,7 +14,6 @@ import { BlockModule } from './block/block.module';
 import { AuthModule } from './auth/auth.module';
 import { DevtoolsModule } from '@nestjs/devtools-integration';
 import { HttpModule } from '@nestjs/axios';
-import { EventsModule } from './events/events.module';
 
 @Module({
   imports: [
@@ -28,6 +27,9 @@ import { EventsModule } from './events/events.module';
 
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
+      subscriptions: {
+        'graphql-ws': true
+      },
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       sortSchema: true,
       context: ({ req }) => ({ req }),
@@ -48,7 +50,6 @@ import { EventsModule } from './events/events.module';
     BlockModule,
     AuthModule,
     HttpModule,
-    EventsModule
   ],
   controllers: [AppController],
   providers: [AppService]
