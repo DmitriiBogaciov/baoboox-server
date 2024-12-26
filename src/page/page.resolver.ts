@@ -5,12 +5,16 @@ import { CreatePageInput } from './dto/create-page.input';
 import { UpdatePageInput } from './dto/update-page.input';
 import { ID } from 'graphql-ws';
 import { AuthGuard } from '../auth/AuthGuard';
-import { UseGuards } from '@nestjs/common';
+import { UseGuards, Logger } from '@nestjs/common';
 import { pubsub } from 'src/utils/pubsub.provider'
 
 @Resolver(() => Page)
 export class PageResolver {
-  constructor(private readonly pageService: PageService) { }
+  constructor(
+    private readonly pageService: PageService,
+  ) {}
+  
+  private logger: Logger = new Logger(PageResolver.name)
 
   @Mutation(() => Page)
   async createPage(@Args('createPageInput') createPageInput: CreatePageInput) {
@@ -43,18 +47,39 @@ export class PageResolver {
   @UseGuards(new AuthGuard([]))
   async updatePage(@Args('updatePageInput') updatePageInput: UpdatePageInput) {
     const response = await this.pageService.update(updatePageInput.id, updatePageInput);
+
+    await pubsub.publish('pageUpdated', { pageUpdated: response });
+
     return response;
   }
 
   @Mutation(() => Page)
   // @UseGuards(new AuthGuard([]))
   async removePage(@Args('id', { type: () => String }) id: ID) {
-    return await this.pageService.remove(id);
+    const result = await this.pageService.remove(id);
+
+    if (result._id == id){
+      await pubsub.publish('pageRemoved', { pageRemoved: result});
+    }
+
+    return result;
   }
 
   @Subscription(() => Page)
   pageCreated() {
-    // Возвращаем итератор, который "слушает" события 'pageCreated'
+    this.logger.log('Connected to create page sub')
     return pubsub.asyncIterator('pageCreated');
+  }
+
+  @Subscription(() => Page)
+  pageRemoved() {
+    this.logger.log('Connected to remove page sub')
+    return pubsub.asyncIterator('pageRemoved');
+  }
+
+  @Subscription(() => Page)
+  pageUpdated() {
+    this.logger.log('Connected to update page sub')
+    return pubsub.asyncIterator('pageUpdated');
   }
 }

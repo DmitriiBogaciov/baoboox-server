@@ -47,6 +47,7 @@
     "graphql": "^16.9.0",
     "graphql-redis-subscriptions": "^2.7.0",
     "graphql-subscriptions": "^3.0.0",
+    "graphql-type-json": "^0.3.2",
     "graphql-ws": "^5.16.0",
     "jwks-rsa": "^3.1.0",
     "mongoose": "^8.4.4",

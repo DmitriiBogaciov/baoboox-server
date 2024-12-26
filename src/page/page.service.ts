@@ -122,14 +122,6 @@ export class PageService {
 
       await this.pageModel.deleteMany({ _id: { $in: pageIds } });
 
-      // Уведомляем клиентов о каждой удалённой странице
-      pageIds.forEach((pageId) => {
-        this.pageGateway.notifyPageRemoved(
-          pageId.toString(),
-          rootPage.bookId.toString(),
-        );
-      });
-
       return rootPage;
     } catch (error) {
       throw error;

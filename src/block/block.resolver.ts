@@ -25,9 +25,14 @@ export class BlockResolver {
     return this.blockService.findOne(id);
   }
 
+  @Query(() => [Block], { name: 'blocksForPage' })
+  findForPage(@Args('id', { type: () => String }) id: ID) {
+    return this.blockService.findForPage(id);
+  }
+
   @Mutation(() => Block)
   updateBlock(@Args('updateBlockInput') updateBlockInput: UpdateBlockInput) {
-    return this.blockService.update(updateBlockInput.id, updateBlockInput);
+    return this.blockService.update(updateBlockInput);
   }
 
   @Mutation(() => RemoveRes)

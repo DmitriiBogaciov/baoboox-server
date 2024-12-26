@@ -14,6 +14,7 @@ import { BlockModule } from './block/block.module';
 import { AuthModule } from './auth/auth.module';
 import { DevtoolsModule } from '@nestjs/devtools-integration';
 import { HttpModule } from '@nestjs/axios';
+import { GraphQLJSON } from 'graphql-type-json';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { HttpModule } from '@nestjs/axios';
       },
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       sortSchema: true,
+      resolvers: { JSON: GraphQLJSON },
       context: ({ req }) => ({ req }),
     }),
 

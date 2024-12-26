@@ -1,5 +1,6 @@
 import { InputType, Int, Field, ID } from '@nestjs/graphql';
 import { IsString, IsBoolean, IsArray, IsOptional } from 'class-validator';
+import GraphQLJSON from 'graphql-type-json';
 
 @InputType()
 export class CreateBlockInput {
@@ -12,10 +13,10 @@ export class CreateBlockInput {
   @IsOptional()
   readonly order: number
 
-  @Field(() => String, { nullable: true })
+  @Field(() => GraphQLJSON, { nullable: true })
   @IsOptional()
   readonly content: any;
 
   @Field(() => ID)
-  readonly page: string;
+  readonly pageId: string;
 }
