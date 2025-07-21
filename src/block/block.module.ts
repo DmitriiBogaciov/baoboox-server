@@ -7,6 +7,30 @@ import { PageModule } from '../page/page.module'
 import { BlockGateway } from './block.gateway';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { BlockController } from './block.controller';
+import { parse } from 'url';
+
+const createRedisOptions = () => {
+  const redisUrl = process.env.REDIS_URL;
+  
+  if (redisUrl) {
+    const parsed = parse(redisUrl);
+    const isTls = parsed.protocol === 'rediss:';
+    
+    return {
+      host: parsed.hostname!,
+      port: Number(parsed.port),
+      password: parsed.auth ? parsed.auth.split(':')[1] : undefined,
+      tls: isTls ? { rejectUnauthorized: false } : undefined,
+      wildcards: true
+    };
+  } else {
+    return {
+      host: 'localhost',
+      port: 6379,
+      wildcards: true
+    };
+  }
+};
 
 @Module({
   imports: [
@@ -16,11 +40,7 @@ import { BlockController } from './block.controller';
       {
         name: 'NOTIFICATION_SERVICE',
         transport: Transport.REDIS,
-        options: {
-          host: 'localhost',
-          port: 6379,
-          wildcards: true
-        }
+        options: createRedisOptions()
       }
     ]),
   ],
