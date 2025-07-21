@@ -21,7 +21,7 @@ async function bootstrap() {
         host: url.hostname,
         port: parseInt(url.port) || 6379,
         password: url.password || undefined,
-        tls: url.protocol === 'rediss:' ? {} : undefined,
+      tls: url.protocol === 'rediss:' ? { rejectUnauthorized: false } : undefined,
       };
     } else {
       redisOptions = {
