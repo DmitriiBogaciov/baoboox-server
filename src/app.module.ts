@@ -15,6 +15,7 @@ import { AuthModule } from './auth/auth.module';
 import { DevtoolsModule } from '@nestjs/devtools-integration';
 import { HttpModule } from '@nestjs/axios';
 import { GraphQLJSON } from 'graphql-type-json';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 
 @Module({
   imports: [

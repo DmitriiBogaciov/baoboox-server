@@ -12,8 +12,8 @@ import { pubsub } from 'src/utils/pubsub.provider'
 export class PageResolver {
   constructor(
     private readonly pageService: PageService,
-  ) {}
-  
+  ) { }
+
   private logger: Logger = new Logger(PageResolver.name)
 
   @Mutation(() => Page)
@@ -21,7 +21,7 @@ export class PageResolver {
     const newPage = await this.pageService.create(createPageInput);
 
     await pubsub.publish('pageCreated', { pageCreated: newPage });
-    
+
     return newPage;
   }
 
@@ -58,15 +58,18 @@ export class PageResolver {
   async removePage(@Args('id', { type: () => String }) id: ID) {
     const result = await this.pageService.remove(id);
 
-    if (result._id == id){
-      await pubsub.publish('pageRemoved', { pageRemoved: result});
+    if (result._id == id) {
+      await pubsub.publish('pageRemoved', { pageRemoved: result });
     }
 
     return result;
   }
 
-  @Subscription(() => Page)
-  pageCreated() {
+  @Subscription(() => Page, {
+    filter: (payload, variables) =>
+      payload.pageCreated.bookId === variables.bookId,
+  })
+  pageCreated(@Args('bookId') bookId: string) {
     this.logger.log('Connected to create page sub')
     return pubsub.asyncIterator('pageCreated');
   }

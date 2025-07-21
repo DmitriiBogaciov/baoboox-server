@@ -120,7 +120,7 @@ type RemoveRes {
 }
 
 type Subscription {
-  pageCreated: Page!
+  pageCreated(bookId: String!): Page!
   pageRemoved: Page!
   pageUpdated: Page!
 }

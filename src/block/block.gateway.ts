@@ -8,10 +8,10 @@ import {
   OnGatewayConnection,
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
-import { Logger } from '@nestjs/common';
+import { Inject, Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { BlockService } from './block.service';
-import { UpdateBlockInput } from './dto/update-block.input';
+import { Ctx, Payload, RedisContext, ClientProxy, EventPattern } from '@nestjs/microservices';
 
 @WebSocketGateway({ cors: true })
 export class BlockGateway
@@ -19,9 +19,12 @@ export class BlockGateway
   @WebSocketServer()
   server: Server;
 
-  private logger: Logger = new Logger('BlockGateway');
+  constructor(
+    private readonly blockService: BlockService,
+    @Inject('NOTIFICATION_SERVICE') private client: ClientProxy
+  ) { }
 
-  constructor(private readonly blockService: BlockService) { }
+  private logger: Logger = new Logger('BlockGateway');
 
   afterInit(server: Server) {
     this.logger.log('WebSocket Gateway initialized');
@@ -44,17 +47,20 @@ export class BlockGateway
     this.logger.log(`Client ${client.id} joined page ${pageId}`);
 
     // Отправляем текущее состояние всех блоков клиенту
-    const currentBlocks = await this.blockService.findForPage(pageId);
-    client.emit('block_state', currentBlocks);
+    // const currentBlocks = await this.blockService.findForPage(pageId);
+    // client.emit('block_state', currentBlocks);
   }
 
-  @SubscribeMessage('update_block')
+  @SubscribeMessage('block_update')
   async handleUpdateBlock(
     @MessageBody()
     { pageId, blockId, content }: { pageId: string; blockId: string; content: any },
     @ConnectedSocket() client: Socket,
   ) {
     try {
+
+      this.client.emit('block_updated', { pageId, blockId, content })
+
       // Обновляем состояние блока
       const dToIn = {
         id: blockId,
@@ -62,16 +68,10 @@ export class BlockGateway
       }
       const updatedBlock = await this.blockService.update(dToIn);
 
-      // Рассылаем изменения всем клиентам в комнате, кроме отправителя
-      client.to(pageId).emit('block_updated', {
-        blockId: updatedBlock._id,
-        content: updatedBlock.content,
-      });
-
       this.logger.log(`Block ${blockId} updated by ${client.id}`);
     } catch (error) {
-      this.logger.error(`Error updating block ${blockId}: ${error.message}`);
-      client.emit('error', { message: `Failed to update block: ${error.message}` });
+      throw error;
     }
   }
+
 }
