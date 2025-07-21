@@ -2,8 +2,19 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { Logger } from '@nestjs/common';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { parse } from 'url';
 
 async function bootstrap() {
+  
+const redisUrl = process.env.REDIS_URL!;
+const parsed = parse(redisUrl);
+
+const isTls = parsed.protocol === 'rediss:';
+
+const host = parsed.hostname!;
+const redisPort = Number(parsed.port);
+const password = parsed.auth ? parsed.auth.split(':')[1] : undefined;
+
   const app = await NestFactory.create(AppModule, {
     snapshot: true,
     logger: ['log', 'error', 'warn', 'debug', 'verbose'],
@@ -12,26 +23,14 @@ async function bootstrap() {
   app.enableCors();
 
   try {
-    // Redis config for Heroku or local
-    let redisOptions;
-    const redisUrl = process.env.REDIS_URL;
-    if (redisUrl) {
-      const url = new URL(redisUrl);
-      redisOptions = {
-        host: url.hostname,
-        port: parseInt(url.port) || 6379,
-        password: url.password || undefined,
-      tls: url.protocol === 'rediss:' ? { rejectUnauthorized: false } : undefined,
-      };
-    } else {
-      redisOptions = {
-        host: process.env.REDIS_HOST || 'localhost',
-        port: process.env.REDIS_PORT ? Number(process.env.REDIS_PORT) : 6379,
-      };
-    }
-    app.connectMicroservice<MicroserviceOptions>({
+    app.connectMicroservice({
       transport: Transport.REDIS,
-      options: redisOptions,
+      options: {
+        host,
+        port: redisPort,
+        password,
+        tls: isTls ? { rejectUnauthorized: false } : undefined,
+      },
     });
 
     await app.startAllMicroservices();
