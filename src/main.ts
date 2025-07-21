@@ -12,12 +12,26 @@ async function bootstrap() {
   app.enableCors();
 
   try {
-    app.connectMicroservice<MicroserviceOptions>({
-      transport: Transport.REDIS,
-      options: {
+    // Redis config for Heroku or local
+    let redisOptions;
+    const redisUrl = process.env.REDIS_URL;
+    if (redisUrl) {
+      const url = new URL(redisUrl);
+      redisOptions = {
+        host: url.hostname,
+        port: parseInt(url.port) || 6379,
+        password: url.password || undefined,
+        tls: url.protocol === 'rediss:' ? {} : undefined,
+      };
+    } else {
+      redisOptions = {
         host: process.env.REDIS_HOST || 'localhost',
         port: process.env.REDIS_PORT ? Number(process.env.REDIS_PORT) : 6379,
-      },
+      };
+    }
+    app.connectMicroservice<MicroserviceOptions>({
+      transport: Transport.REDIS,
+      options: redisOptions,
     });
 
     await app.startAllMicroservices();
