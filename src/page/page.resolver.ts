@@ -5,13 +5,15 @@ import { CreatePageInput } from './dto/create-page.input';
 import { UpdatePageInput } from './dto/update-page.input';
 import { ID } from 'graphql-ws';
 import { AuthGuard } from '../auth/AuthGuard';
-import { UseGuards, Logger } from '@nestjs/common';
-import { pubsub } from 'src/utils/pubsub.provider'
+import { UseGuards, Logger, Inject } from '@nestjs/common';
+import { PUBSUB } from '../utils/pubsub.constants';
+import { PubSub } from 'graphql-subscriptions';
 
 @Resolver(() => Page)
 export class PageResolver {
   constructor(
     private readonly pageService: PageService,
+    @Inject(PUBSUB) private readonly pubSub: PubSub,
   ) { }
 
   private logger: Logger = new Logger(PageResolver.name)
@@ -20,7 +22,9 @@ export class PageResolver {
   async createPage(@Args('createPageInput') createPageInput: CreatePageInput) {
     const newPage = await this.pageService.create(createPageInput);
 
-    await pubsub.publish('pageCreated', { pageCreated: newPage });
+    this.logger.log(`Publishing pageCreated event with payload: ${JSON.stringify(newPage)}`)
+
+    await this.pubSub.publish('pageCreated', { pageCreated: newPage });
 
     return newPage;
   }
@@ -48,7 +52,9 @@ export class PageResolver {
   async updatePage(@Args('updatePageInput') updatePageInput: UpdatePageInput) {
     const response = await this.pageService.update(updatePageInput.id, updatePageInput);
 
-    await pubsub.publish('pageUpdated', { pageUpdated: response });
+    // this.logger.log(`Publishing pageUpdated event with payload: ${JSON.stringify(response)}`);
+
+    await this.pubSub.publish('pageUpdated', { pageUpdated: response });
 
     return response;
   }
@@ -59,30 +65,33 @@ export class PageResolver {
     const result = await this.pageService.remove(id);
 
     if (result._id == id) {
-      await pubsub.publish('pageRemoved', { pageRemoved: result });
+      await this.pubSub.publish('pageRemoved', { pageRemoved: result });
     }
 
     return result;
   }
 
   @Subscription(() => Page, {
-    filter: (payload, variables) =>
-      payload.pageCreated.bookId === variables.bookId,
+    filter: (payload, variables) => {
+      console.log('filter payload:', payload);
+      console.log('filter variables:', variables);
+      return payload.pageCreated.bookId.toString() === variables.bookId;
+    },
   })
   pageCreated(@Args('bookId') bookId: string) {
-    this.logger.log('Connected to create page sub')
-    return pubsub.asyncIterator('pageCreated');
+    this.logger.log(`Connected to create page sub for bookId: ${bookId}`);
+    return this.pubSub.asyncIterableIterator('pageCreated');
   }
 
   @Subscription(() => Page)
   pageRemoved() {
     this.logger.log('Connected to remove page sub')
-    return pubsub.asyncIterator('pageRemoved');
+    return this.pubSub.asyncIterableIterator('pageRemoved');
   }
 
   @Subscription(() => Page)
   pageUpdated() {
     this.logger.log('Connected to update page sub')
-    return pubsub.asyncIterator('pageUpdated');
+    return this.pubSub.asyncIterableIterator('pageUpdated');
   }
 }

@@ -11,7 +11,7 @@ import {
 import { Inject, Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { BlockService } from './block.service';
-import { Ctx, Payload, RedisContext, ClientProxy, EventPattern } from '@nestjs/microservices';
+import { ClientProxy } from '@nestjs/microservices';
 
 @WebSocketGateway({ cors: true })
 export class BlockGateway

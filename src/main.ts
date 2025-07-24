@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { Logger } from '@nestjs/common';
-import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { Transport } from '@nestjs/microservices';
 import { parse } from 'url';
 
 async function bootstrap() {
@@ -9,11 +9,8 @@ async function bootstrap() {
 const redisUrl = process.env.REDIS_URL!;
 const parsed = parse(redisUrl);
 
-const isTls = parsed.protocol === 'rediss:';
-
 const host = parsed.hostname!;
 const redisPort = Number(parsed.port);
-const password = parsed.auth ? parsed.auth.split(':')[1] : undefined;
 
   const app = await NestFactory.create(AppModule, {
     snapshot: true,
@@ -27,9 +24,7 @@ const password = parsed.auth ? parsed.auth.split(':')[1] : undefined;
       transport: Transport.REDIS,
       options: {
         host,
-        port: redisPort,
-        password,
-        tls: isTls ? { rejectUnauthorized: false } : undefined,
+        port: redisPort
       },
     });
 

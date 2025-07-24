@@ -16,6 +16,14 @@ import { DevtoolsModule } from '@nestjs/devtools-integration';
 import { HttpModule } from '@nestjs/axios';
 import { GraphQLJSON } from 'graphql-type-json';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+import { PubSubProvider } from './utils/pubsub.provider';
+import { parse } from 'url';
+
+const redisUrl = process.env.REDIS_URL!;
+const parsed = parse(redisUrl);
+
+const host = parsed.hostname!;
+const redisPort = Number(parsed.port);
 
 @Module({
   imports: [
@@ -32,11 +40,23 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
       subscriptions: {
         'graphql-ws': true
       },
+      installSubscriptionHandlers: true,
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       sortSchema: true,
       resolvers: { JSON: GraphQLJSON },
       context: ({ req }) => ({ req }),
     }),
+
+    ClientsModule.register([
+      {
+        name: 'BOOK_SERVICE',
+        transport: Transport.REDIS,
+        options: {
+          host,
+          port: redisPort,
+        }
+      },
+    ]),
 
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
@@ -55,6 +75,9 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
     HttpModule,
   ],
   controllers: [AppController],
-  providers: [AppService]
+  providers: [
+    AppService,
+    PubSubProvider,
+  ]
 })
-export class AppModule {}
+export class AppModule { }
