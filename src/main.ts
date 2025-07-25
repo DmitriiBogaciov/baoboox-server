@@ -24,7 +24,8 @@ const redisPort = Number(parsed.port);
       transport: Transport.REDIS,
       options: {
         host,
-        port: redisPort
+        port: redisPort,
+        wildcards: true,
       },
     });
 

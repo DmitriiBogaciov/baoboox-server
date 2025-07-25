@@ -15,9 +15,11 @@ import { AuthModule } from './auth/auth.module';
 import { DevtoolsModule } from '@nestjs/devtools-integration';
 import { HttpModule } from '@nestjs/axios';
 import { GraphQLJSON } from 'graphql-type-json';
-import { ClientsModule, Transport } from '@nestjs/microservices';
-import { PubSubProvider } from './utils/pubsub.provider';
+import { pubSub } from './utils/pubsub.provider';
 import { parse } from 'url';
+import { RedisClientModule } from './utils/redis-client.module';
+import { PageController } from './page/page.controller';
+import { PUBSUB } from './utils/pubsub.constants';
 
 const redisUrl = process.env.REDIS_URL!;
 const parsed = parse(redisUrl);
@@ -47,17 +49,6 @@ const redisPort = Number(parsed.port);
       context: ({ req }) => ({ req }),
     }),
 
-    ClientsModule.register([
-      {
-        name: 'BOOK_SERVICE',
-        transport: Transport.REDIS,
-        options: {
-          host,
-          port: redisPort,
-        }
-      },
-    ]),
-
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
@@ -73,11 +64,15 @@ const redisPort = Number(parsed.port);
     BlockModule,
     AuthModule,
     HttpModule,
+    RedisClientModule
   ],
-  controllers: [AppController],
+  controllers: [AppController, PageController],
   providers: [
     AppService,
-    PubSubProvider,
+    {
+      provide: PUBSUB,
+      useValue: pubSub,
+    },
   ]
 })
 export class AppModule { }

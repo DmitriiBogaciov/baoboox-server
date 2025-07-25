@@ -8,12 +8,14 @@ import { AuthGuard } from '../auth/AuthGuard';
 import { UseGuards, Logger, Inject } from '@nestjs/common';
 import { PUBSUB } from '../utils/pubsub.constants';
 import { PubSub } from 'graphql-subscriptions';
+import { ClientProxy, EventPattern } from '@nestjs/microservices';
 
 @Resolver(() => Page)
 export class PageResolver {
   constructor(
     private readonly pageService: PageService,
     @Inject(PUBSUB) private readonly pubSub: PubSub,
+    @Inject('BOOK_SERVICE') private readonly bookClient: ClientProxy,
   ) { }
 
   private logger: Logger = new Logger(PageResolver.name)
@@ -52,8 +54,6 @@ export class PageResolver {
   async updatePage(@Args('updatePageInput') updatePageInput: UpdatePageInput) {
     const response = await this.pageService.update(updatePageInput.id, updatePageInput);
 
-    // this.logger.log(`Publishing pageUpdated event with payload: ${JSON.stringify(response)}`);
-
     await this.pubSub.publish('pageUpdated', { pageUpdated: response });
 
     return response;
@@ -73,8 +73,6 @@ export class PageResolver {
 
   @Subscription(() => Page, {
     filter: (payload, variables) => {
-      console.log('filter payload:', payload);
-      console.log('filter variables:', variables);
       return payload.pageCreated.bookId.toString() === variables.bookId;
     },
   })
