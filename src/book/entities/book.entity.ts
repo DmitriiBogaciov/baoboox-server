@@ -22,7 +22,15 @@ export class Book {
 
   @Field({nullable: true})
   @Prop()
-  author: string;
+  owner: string;
+
+  @Field(() => [String], {nullable: true})
+  @Prop({type: [String], default: []})
+  authors: string[];
+
+  @Field(() => [String], {nullable: true})
+  @Prop({type: [String], default: []})
+  editors: string[];
 
   @Field({ nullable: true })
   @Prop({type: String, default: null})

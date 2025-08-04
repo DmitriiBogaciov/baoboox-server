@@ -1,4 +1,4 @@
-import { Resolver, Query, Mutation, Args, Subscription } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Context, Subscription } from '@nestjs/graphql';
 import { PageService } from './page.service';
 import { Page } from './entities/page.entity';
 import { CreatePageInput } from './dto/create-page.input';
@@ -43,16 +43,23 @@ export class PageResolver {
   }
 
   @Query(() => [Page], { name: 'pagesForBook' })
-  async getPagesForBook(@Args('id', { type: () => String }) id: ID) {
-    const response = await this.pageService.getPagesForBook(id);
-    return response;
+  async getPagesForBook(
+    @Args('id', { type: () => String }) id: ID,
+    @Args('parentIds', {type: () => [String], nullable: true}) parentIds?: ID[],
+  ) {
+    this.logger.log(`Fetching pages for book with id: ${id} and parentIds: ${parentIds}`);
+    
+    if (parentIds && parentIds.length > 0) {
+      return this.pageService.getPagesForParents(parentIds);
+    }
+    return this.pageService.getPagesForBook(id);
   }
 
 
   @Mutation(() => Page)
   @UseGuards(new AuthGuard([]))
-  async updatePage(@Args('updatePageInput') updatePageInput: UpdatePageInput) {
-    const response = await this.pageService.update(updatePageInput.id, updatePageInput);
+  async updatePage(@Args('updatePageInput') updatePageInput: UpdatePageInput, @Context() context: any) {
+    const response = await this.pageService.update(updatePageInput.id, updatePageInput, context.req.auth.payload.sub);
 
     await this.pubSub.publish('pageUpdated', { pageUpdated: response });
 

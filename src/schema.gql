@@ -12,12 +12,14 @@ type Block {
 
 type Book {
   _id: ID!
-  author: String
+  authors: [String!]
   categories: [Category!]
   createdAt: DateTime!
   description: String
+  editors: [String!]
   image: String
   language: String
+  owner: String
   tags: [String!]
   title: String!
   updatedAt: DateTime!
@@ -39,7 +41,7 @@ input CreateBlockInput {
 }
 
 input CreateBookInput {
-  author: String
+  authors: [String!]
   categories: [String!]
   description: String
   image: String
@@ -57,6 +59,7 @@ input CreateCategoryInput {
 
 input CreatePageInput {
   bookId: ID!
+  content: String
   order: Int
   parentId: ID
   title: String
@@ -91,7 +94,9 @@ type Mutation {
 type Page {
   _id: ID!
   bookId: ID!
-  children: [Page!]
+  content: String
+  lockedAt: String
+  lockedBy: String
   order: Int!
   parentId: ID
   title: String
@@ -110,7 +115,7 @@ type Query {
   category(id: String!): Category!
   page(id: String!): Page
   pages: [Page!]!
-  pagesForBook(id: String!): [Page!]!
+  pagesForBook(id: String!, parentIds: [String!]): [Page!]!
 }
 
 type RemoveRes {
@@ -120,6 +125,7 @@ type RemoveRes {
 }
 
 type Subscription {
+  bookUpdated: Book!
   pageCreated(bookId: String!): Page!
   pageRemoved: Page!
   pageUpdated: Page!
@@ -134,7 +140,7 @@ input UpdateBlockInput {
 }
 
 input UpdateBookInput {
-  author: String
+  authors: [String!]
   categories: [String!]
   description: String
   id: ID!
@@ -154,7 +160,10 @@ input UpdateCategoryInput {
 
 input UpdatePageInput {
   bookId: ID
+  content: String
   id: ID!
+  lockedAt: DateTime
+  lockedBy: String
   order: Int
   parentId: ID
   title: String

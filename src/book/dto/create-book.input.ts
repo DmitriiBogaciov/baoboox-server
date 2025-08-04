@@ -12,10 +12,10 @@ export class CreateBookInput {
   @IsOptional()
   readonly description?: string;
 
-  @Field({ nullable: true })
-  @IsString()
+  @Field(() => [String], { nullable: true })
+  @IsArray()
   @IsOptional()
-  readonly author: string;
+  readonly authors: string[];
 
   @Field({ nullable: true })
   @IsString()

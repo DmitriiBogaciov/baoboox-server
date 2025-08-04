@@ -42,7 +42,6 @@ const redisPort = Number(parsed.port);
       subscriptions: {
         'graphql-ws': true
       },
-      installSubscriptionHandlers: true,
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       sortSchema: true,
       resolvers: { JSON: GraphQLJSON },

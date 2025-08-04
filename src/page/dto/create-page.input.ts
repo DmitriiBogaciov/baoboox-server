@@ -22,4 +22,9 @@ export class CreatePageInput {
   @Field(() => Int, {nullable: true})
   @IsInt()
   order: number;
+
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  content?: string;
 }

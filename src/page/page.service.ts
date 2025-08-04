@@ -1,8 +1,10 @@
 import {
   Injectable,
   BadRequestException,
-  forwardRef,
-  Inject,
+  Logger,
+  NotFoundException,
+  ForbiddenException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { Model, Connection, Types } from 'mongoose';
 import { InjectModel, InjectConnection } from '@nestjs/mongoose';
@@ -10,17 +12,15 @@ import { Page, PageDocument } from './entities/page.entity';
 import { CreatePageInput } from './dto/create-page.input';
 import { UpdatePageInput } from './dto/update-page.input';
 import { ID } from 'graphql-ws';
-import { PageGateway } from './page.gateway';
 
 @Injectable()
 export class PageService {
   constructor(
     @InjectModel(Page.name) private pageModel: Model<PageDocument>,
     @InjectConnection() private connection: Connection,
-    @Inject(forwardRef(() => PageGateway))
-    private readonly pageGateway: PageGateway,
-  ) {}
+  ) { }
 
+  private readonly Logger: Logger = new Logger(PageService.name);
   /**
    * Создание страницы с автогенерацией order
    */
@@ -40,9 +40,6 @@ export class PageService {
     // Сохраняем в БД
     const savedPage = await createdPage.save();
 
-    // Оповещаем всех в книге о том, что страница добавлена
-    this.pageGateway.notifyPageAdded(savedPage);
-
     return savedPage;
   }
 
@@ -52,6 +49,7 @@ export class PageService {
 
   async findOne(id: string): Promise<Page | null> {
     try {
+      this.Logger.log(`Finding page with id: ${id}`);
       return await this.pageModel.findById(id).exec();
     } catch (error) {
       throw new Error(`Failed to find page: ${error.message}`);
@@ -65,19 +63,53 @@ export class PageService {
     return this.pageModel.find({ bookId }).exec();
   }
 
+  async getPagesForParents(parentIds: string[]): Promise<Page[]> {
+    for (const id of parentIds) {
+      if (!Types.ObjectId.isValid(id)) {
+        throw new BadRequestException(`Invalid parentId: ${id}`);
+      }
+    }
+    return this.pageModel.find({ parentId: { $in: parentIds } }).exec();
+  }
+
   /**
-   * Обновление страницы, потом рассылаем событие
+   * Обновление страницы
    */
-  async update(id: string, updatePageInput: UpdatePageInput) {
+  async update(id: string, updatePageInput: UpdatePageInput, userId: ID): Promise<Page> {
+    const page = await this.pageModel.findById(id).populate('bookId');
+    if (!page) {
+      throw new NotFoundException(`Page with id ${id} not found`);
+    }
+    const book = page.bookId;
+    if (!book) {
+      throw new NotFoundException(`Book for page with id ${id} not found`);
+    }
+
+    if (!book.owner || (!book.editors || !Array.isArray(book.editors))) {
+      throw new InternalServerErrorException('Invalid book access data');
+    }
+    if (book.owner !== userId && !book.editors.includes(userId)) {
+      throw new ForbiddenException('You do not have permission to update this page');
+    }
+
+    // Проверка блокировки: если страница заблокирована другим пользователем и блокировка не истекла
+    const lockTimeout = 5 * 60 * 1000; // 5 минут
+    const now = new Date();
+
+    if (page.lockedBy &&
+      page.lockedBy !== userId &&
+      page.lockedAt &&
+      (now.getTime() - new Date(page.lockedAt).getTime()) < lockTimeout) {
+      throw new BadRequestException(`Page is currently being edited by another user. Please try again later.`);
+    }
+
+    this.Logger.log(`Updating page ${page._id}`);
     const newPage = await this.pageModel.findOneAndUpdate(
       { _id: id },
-      { $set: updatePageInput },
+      { $set: updatePageInput, lockedBy: userId, lockedAt: new Date() },
       { new: true },
     );
 
-    if (newPage) {
-      this.pageGateway.notifyPageUpdated(newPage);
-    }
     return newPage;
   }
 

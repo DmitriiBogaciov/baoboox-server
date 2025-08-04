@@ -5,6 +5,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Book, BookSchema } from './entities/book.entity'
 import { CategoryModule } from '../category/category.module'
 import { UserModule } from 'src/user/user.module';
+import { PUBSUB } from 'src/utils/pubsub.constants';
+import { PubSub } from 'graphql-subscriptions';
 
 
 @Module({
@@ -13,7 +15,10 @@ import { UserModule } from 'src/user/user.module';
     CategoryModule,
     UserModule
   ],
-  providers: [BookResolver, BookService],
+  providers: [BookResolver, BookService, {
+    provide: PUBSUB,
+    useValue: new PubSub()
+  }],
   exports: [BookService]
 })
 export class BookModule {}

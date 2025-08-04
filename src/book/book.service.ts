@@ -21,8 +21,8 @@ export class BookService {
     try {
       const bookData = {
         ...createBookInput,
-        title: 'Undefined',
-        author: userId
+        title: 'Untiteled Book',
+        owner: userId
       }
 
       const createdBook = new this.bookModel(bookData);
@@ -47,7 +47,7 @@ export class BookService {
   }
 
   async findForAuthor(userId: ID) {
-    const books = await this.bookModel.find({ author: userId });
+    const books = await this.bookModel.find( { $or: [{ owner: userId }, { editors: { $in: [userId] } }] }).exec();
     return books;
   }
 
@@ -64,7 +64,7 @@ export class BookService {
       }
 
       const updatedBook = await this.bookModel.findOneAndUpdate(
-        { _id: objectId, author: userId },
+        { _id: objectId, $or: [{owner: userId}, { editors: { $in: [userId] } }] },
         { $set: updateBookInput },
         { new: true }
       ).exec();

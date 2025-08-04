@@ -32,8 +32,17 @@ export class Page {
   @Prop({ required: false, default: null })
   order: number;
 
-  @Field(() => [Page], {nullable: true})
-  children: Page[] | null;
+  @Field(() => String, { nullable: true   })
+  @Prop({ type: mongoose.Schema.Types.Mixed, default: null, required: false })
+  content: any;
+
+  @Field(() => String, { nullable: true   })
+  @Prop({ default: null, required: false })
+  lockedBy: string | null;
+
+  @Field(() => String, { nullable: true   })
+  @Prop({ type: mongoose.Schema.Types.Mixed, default: null, required: false })
+  lockedAt: Date | null;
 }
 
 export const PageSchema = SchemaFactory.createForClass(Page);

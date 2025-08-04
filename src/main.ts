@@ -5,12 +5,12 @@ import { Transport } from '@nestjs/microservices';
 import { parse } from 'url';
 
 async function bootstrap() {
-  
-const redisUrl = process.env.REDIS_URL!;
-const parsed = parse(redisUrl);
 
-const host = parsed.hostname!;
-const redisPort = Number(parsed.port);
+  // const redisUrl = process.env.REDIS_URL!;
+  // const parsed = parse(redisUrl);
+
+  // const host = parsed.hostname!;
+  // const redisPort = Number(parsed.port);
 
   const app = await NestFactory.create(AppModule, {
     snapshot: true,
@@ -19,22 +19,22 @@ const redisPort = Number(parsed.port);
 
   app.enableCors();
 
-  try {
-    app.connectMicroservice({
-      transport: Transport.REDIS,
-      options: {
-        host,
-        port: redisPort,
-        wildcards: true,
-      },
-    });
+  // try {
+  //   app.connectMicroservice({
+  //     transport: Transport.REDIS,
+  //     options: {
+  //       host,
+  //       port: redisPort,
+  //       wildcards: true,
+  //     },
+  //   });
 
-    await app.startAllMicroservices();
-    Logger.log('Microservices started successfully', 'Bootstrap');
-  } catch (error) {
-    Logger.error('Microservices failed to start', error, 'Bootstrap');
-    process.exit(1); // Остановка приложения, если микросервисы не запустились
-  }
+  //   await app.startAllMicroservices();
+  //   Logger.log('Microservices started successfully', 'Bootstrap');
+  // } catch (error) {
+  //   Logger.error('Microservices failed to start', error, 'Bootstrap');
+  //   process.exit(1); // Остановка приложения, если микросервисы не запустились
+  // }
 
   const port = process.env.PORT || 4000;
   await app.listen(port);

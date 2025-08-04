@@ -1,20 +1,25 @@
-import { Resolver, Query, Mutation, Args, Int, Context, ObjectType, Field } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Context, Subscription } from '@nestjs/graphql';
 import { BookService } from './book.service';
 import { Book } from './entities/book.entity';
 import { CreateBookInput } from './dto/create-book.input';
 import { UpdateBookInput } from './dto/update-book.input';
-import { UseGuards } from '@nestjs/common';
+import { UseGuards, Inject, Logger } from '@nestjs/common';
 import { AuthGuard } from '../auth/AuthGuard';
 import { UserService } from 'src/user/user.service';
 import { ID } from 'graphql-ws';
-import {RemoveRes} from 'src/utils/classes'
+import { RemoveRes } from 'src/utils/classes';
+import { PUBSUB } from '../utils/pubsub.constants';
+import { PubSub } from 'graphql-subscriptions';
 
 @Resolver(() => Book)
 export class BookResolver {
+  private readonly logger = new Logger(BookResolver.name);
+
   constructor(
     private readonly bookService: BookService,
-    private readonly userService: UserService
-    ) {}
+    private readonly userService: UserService,
+    @Inject(PUBSUB) private readonly pubSub: PubSub,
+  ) { }
 
   @UseGuards(new AuthGuard([]))
   @Mutation(() => Book)
@@ -32,12 +37,12 @@ export class BookResolver {
     return this.bookService.findOne(id);
   }
 
-  @Query(() => [Book], { name: 'booksByCategory'})
-  findByCategory(@Args('id', { type: () => String}) id: ID) {
+  @Query(() => [Book], { name: 'booksByCategory' })
+  findByCategory(@Args('id', { type: () => String }) id: ID) {
     return this.bookService.findByCategory(id);
   }
 
-  @Query(() => [Book], { name: 'booksForAuthor'})
+  @Query(() => [Book], { name: 'booksForAuthor' })
   @UseGuards(new AuthGuard([]))
   findForAuthor(@Context() context: any) {
     return this.bookService.findForAuthor(context.req.auth.payload.sub);
@@ -45,12 +50,20 @@ export class BookResolver {
 
   @Mutation(() => Book)
   @UseGuards(new AuthGuard(['update:book']))
-  updateBook(@Args('updateBookInput') updateBookInput: UpdateBookInput, @Context() context: any) {
-    return this.bookService.update(updateBookInput.id, updateBookInput, context.req.auth.payload.sub);
+  async updateBook(@Args('updateBookInput') updateBookInput: UpdateBookInput, @Context() context: any) {
+    const response = await this.bookService.update(updateBookInput.id, updateBookInput, context.req.auth.payload.sub);
+    await this.pubSub.publish('bookUpdated', { bookUpdated: response });
+    return response;
   }
 
   @Mutation(() => RemoveRes)
   removeBook(@Args('id', { type: () => String }) id: ID) {
     return this.bookService.remove(id);
+  }
+
+  @Subscription(() => Book)
+  bookUpdated() {
+    this.logger.log('Connected to update book sub')
+    return this.pubSub.asyncIterableIterator('bookUpdated');
   }
 }
