@@ -7,7 +7,18 @@ describe('PageResolver', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [PageResolver, PageService],
+      providers: [
+        PageResolver,
+        PageService,
+        {
+          provide: 'PUBSUB',
+          useValue: {}, // You can provide a mock implementation if needed
+        },
+        {
+          provide: 'BOOK_SERVICE',
+          useValue: {}, // You can provide a mock implementation if needed
+        },
+      ],
     }).compile();
 
     resolver = module.get<PageResolver>(PageResolver);

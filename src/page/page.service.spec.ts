@@ -6,7 +6,17 @@ describe('PageService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [PageService],
+      providers: [
+        PageService,
+        {
+          provide: 'PageModel',
+          useValue: {}, // Provide a mock or stub as needed
+        },
+        {
+          provide: 'DatabaseConnection',
+          useValue: {}, // Provide a mock or stub as needed
+        },
+      ],
     }).compile();
 
     service = module.get<PageService>(PageService);

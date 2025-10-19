@@ -1,5 +1,5 @@
-import { InputType, Field, Int, ID } from '@nestjs/graphql';
-import { IsString, IsBoolean, IsOptional, IsInt } from 'class-validator';
+import { InputType, Field, ID } from '@nestjs/graphql';
+import { IsString, IsBoolean, IsOptional, IsNumber } from 'class-validator';
 
 @InputType()
 export class CreatePageInput {
@@ -19,8 +19,8 @@ export class CreatePageInput {
   @Field(() => ID)
   bookId: string;
 
-  @Field(() => Int, {nullable: true})
-  @IsInt()
+  @Field(() => Number, {nullable: true})
+  @IsNumber()
   order: number;
 
   @Field(() => String, { nullable: true })

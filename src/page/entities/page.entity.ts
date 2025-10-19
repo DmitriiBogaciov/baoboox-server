@@ -1,4 +1,4 @@
-import { ObjectType, Field, Int, ID } from '@nestjs/graphql';
+import { ObjectType, Field, ID } from '@nestjs/graphql';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 import * as mongoose from 'mongoose';
@@ -28,7 +28,7 @@ export class Page {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Book' })
   bookId: Book | null;
 
-  @Field(() => Int)
+  @Field(() => Number)
   @Prop({ required: false, default: null })
   order: number;
 

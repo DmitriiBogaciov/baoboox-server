@@ -21,17 +21,15 @@ export class PageService {
   ) { }
 
   private readonly Logger: Logger = new Logger(PageService.name);
-  /**
-   * Создание страницы с автогенерацией order
-   */
+
+  //TODO: race condition possible here when two pages are created simultaneously
   async create(createPageInput: CreatePageInput) {
-    // Находим максимальный order для данной книги
     const maxOrderPage = await this.pageModel
-      .findOne({ bookId: createPageInput.bookId })
+      .findOne({ bookId: createPageInput.bookId, parentId: createPageInput.parentId })
       .sort({ order: -1 })
       .exec();
 
-    const newOrder = maxOrderPage ? maxOrderPage.order + 1 : 1;
+    const newOrder = maxOrderPage ? maxOrderPage.order + 100 : 100;
     const createdPage = new this.pageModel({
       ...createPageInput,
       order: newOrder,
@@ -85,6 +83,10 @@ export class PageService {
       throw new NotFoundException(`Book for page with id ${id} not found`);
     }
 
+    if(page._id.toString() === updatePageInput?.parentId?.toString()) {
+      throw new BadRequestException(`A page cannot be its own parent`);
+    }
+
     if (!book.owner || (!book.editors || !Array.isArray(book.editors))) {
       throw new InternalServerErrorException('Invalid book access data');
     }
@@ -111,6 +113,15 @@ export class PageService {
     );
 
     return newPage;
+  }
+
+  async updateMany(updatePageInputs: UpdatePageInput[], userId: ID): Promise<Page[]> {
+    const updatedPages: Page[] = [];
+    for (const input of updatePageInputs) {
+      const updatedPage = await this.update(input.id, input, userId);
+      updatedPages.push(updatedPage);
+    }
+    return updatedPages;
   }
 
   /**

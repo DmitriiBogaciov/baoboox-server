@@ -60,7 +60,7 @@ input CreateCategoryInput {
 input CreatePageInput {
   bookId: ID!
   content: String
-  order: Int
+  order: Float
   parentId: ID
   title: String
   visibility: Boolean
@@ -89,6 +89,7 @@ type Mutation {
   updateBook(updateBookInput: UpdateBookInput!): Book!
   updateCategory(updateCategoryInput: UpdateCategoryInput!): Category!
   updatePage(updatePageInput: UpdatePageInput!): Page!
+  updatePages(updatePageInputs: [UpdatePageInput!]!): [Page!]!
 }
 
 type Page {
@@ -97,7 +98,7 @@ type Page {
   content: String
   lockedAt: String
   lockedBy: String
-  order: Int!
+  order: Float!
   parentId: ID
   title: String
   visibility: Boolean
@@ -125,10 +126,10 @@ type RemoveRes {
 }
 
 type Subscription {
-  bookUpdated: Book!
+  bookUpdated(id: String!): Book!
   pageCreated(bookId: String!): Page!
   pageRemoved: Page!
-  pageUpdated: Page!
+  pageUpdated(id: String!): Page!
 }
 
 input UpdateBlockInput {
@@ -164,7 +165,7 @@ input UpdatePageInput {
   id: ID!
   lockedAt: DateTime
   lockedBy: String
-  order: Int
+  order: Float
   parentId: ID
   title: String
   visibility: Boolean

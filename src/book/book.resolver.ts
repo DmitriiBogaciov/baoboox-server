@@ -61,9 +61,15 @@ export class BookResolver {
     return this.bookService.remove(id);
   }
 
-  @Subscription(() => Book)
-  bookUpdated() {
-    this.logger.log('Connected to update book sub')
+  @Subscription(() => Book, {
+    filter: (payload, variables) => {
+      // payload.bookUpdated.id — это id обновлённой книги
+      // variables.id — это id, который передал клиент при подписке
+      return payload.bookUpdated.id === variables.id;
+    },
+  })
+  bookUpdated(@Args('id', { type: () => String }) id: string) {
+    this.logger.log(`Subscribed to book updates for id: ${id}`);
     return this.pubSub.asyncIterableIterator('bookUpdated');
   }
 }

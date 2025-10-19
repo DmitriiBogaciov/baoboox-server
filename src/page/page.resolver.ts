@@ -66,6 +66,40 @@ export class PageResolver {
     return response;
   }
 
+  @Mutation(() => [Page])
+  @UseGuards(new AuthGuard([]))
+  async updatePages(
+    @Args('updatePageInputs', { type: () => [UpdatePageInput] }) updatePageInputs: UpdatePageInput[],
+    @Context() context: any
+  ) {
+    if (!Array.isArray(updatePageInputs) || updatePageInputs.length === 0) {
+      return [];
+    }
+
+    const seen = new Set();
+    for (const input of updatePageInputs) {
+      if (!input.id) {
+        throw new Error(`Missing id in updatePageInputs: ${JSON.stringify(input)}`);
+      }
+      if (seen.has(input.id)) {
+        throw new Error(`Duplicate id found in updatePageInputs: ${input.id}`);
+      }
+      seen.add(input.id);
+    }
+
+    const userId = context?.req?.auth?.payload?.sub as string | undefined;
+
+    // Service method should wrap in a transaction and return updated entities
+    const updated = await this.pageService.updateMany(updatePageInputs, userId);
+
+    // Emit subscription events (optional but useful for live UI)
+    for (const page of updated) {
+      await this.pubSub.publish('pageUpdated', { pageUpdated: page });
+    }
+
+    return updated;
+  }
+
   @Mutation(() => Page)
   // @UseGuards(new AuthGuard([]))
   async removePage(@Args('id', { type: () => String }) id: ID) {
@@ -94,9 +128,13 @@ export class PageResolver {
     return this.pubSub.asyncIterableIterator('pageRemoved');
   }
 
-  @Subscription(() => Page)
-  pageUpdated() {
-    this.logger.log('Connected to update page sub')
+  @Subscription(() => Page, {
+    filter: (payload, variables) => {
+      return payload.pageUpdated.id === variables.id;
+    }
+  })
+  pageUpdated(@Args('id', {type: () => String}) id: string) {
+    this.logger.log(`Connected to update page sub for id: ${id}`)
     return this.pubSub.asyncIterableIterator('pageUpdated');
   }
 }
