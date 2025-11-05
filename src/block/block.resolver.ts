@@ -4,7 +4,7 @@ import { Block } from './entities/block.entity';
 import { CreateBlockInput } from './dto/create-block.input';
 import { UpdateBlockInput } from './dto/update-block.input';
 import { ID } from 'graphql-ws';
-import { RemoveRes } from 'src/utils/classes';
+import { RemoveRes } from '../utils/classes';
 
 @Resolver(() => Block)
 export class BlockResolver {

@@ -7,7 +7,7 @@ import { UseGuards, Inject, Logger } from '@nestjs/common';
 import { AuthGuard } from '../auth/AuthGuard';
 import { UserService } from 'src/user/user.service';
 import { ID } from 'graphql-ws';
-import { RemoveRes } from 'src/utils/classes';
+import { RemoveRes } from "../utils/classes";
 import { PUBSUB } from '../utils/pubsub.constants';
 import { PubSub } from 'graphql-subscriptions';
 

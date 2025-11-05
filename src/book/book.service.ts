@@ -7,7 +7,7 @@ import { Model, Connection } from 'mongoose';
 import { CategoryService } from '../category/category.service'
 import { Types } from 'mongoose';
 import { ID } from 'graphql-ws';
-import { RemoveRes } from 'src/utils/classes'
+import { RemoveRes } from '../utils/classes'
 
 
 @Injectable()

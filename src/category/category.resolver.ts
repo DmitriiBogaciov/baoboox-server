@@ -4,7 +4,7 @@ import { Category } from './entities/category.entity';
 import { CreateCategoryInput } from './dto/create-category.input';
 import { UpdateCategoryInput } from './dto/update-category.input';
 import { ID } from 'graphql-ws';
-import { RemoveRes } from 'src/utils/classes'
+import { RemoveRes } from '../utils/classes'
 
 @Resolver(() => Category)
 export class CategoryResolver {

@@ -5,7 +5,7 @@ import { InjectModel, InjectConnection } from '@nestjs/mongoose';
 import { Category, CategoryDocument } from './entities/category.entity';
 import { Model, Connection, Types } from 'mongoose';
 import { ID } from 'graphql-ws';
-import { RemoveRes } from 'src/utils/classes'
+import { RemoveRes } from '../utils/classes'
 
 @Injectable()
 export class CategoryService {
