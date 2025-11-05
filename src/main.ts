@@ -5,14 +5,17 @@ import { ExpressAdapter } from '@nestjs/platform-express';
 import express from 'express';
 import { Server } from 'http';
 
-let server: Server;
-let app;
+let cachedApp;
 
 async function bootstrap() {
+  if (cachedApp) {
+    return cachedApp;
+  }
+
   const expressApp = express();
   const adapter = new ExpressAdapter(expressApp);
 
-  app = await NestFactory.create(AppModule, adapter, {
+  const app = await NestFactory.create(AppModule, adapter, {
     snapshot: true,
     logger: ['log', 'error', 'warn', 'debug', 'verbose'],
   });
@@ -28,6 +31,7 @@ async function bootstrap() {
     await app.init();
   }
 
+  cachedApp = expressApp;
   return expressApp;
 }
 
@@ -36,11 +40,9 @@ if (require.main === module) {
   bootstrap();
 }
 
-// Экспорт для serverless (AWS Lambda)
-export const handler = async (event: any, context: any) => {
-  if (!app) {
-    const expressApp = await bootstrap();
-    const serverlessExpress = require('@vendia/serverless-express');
-    return serverlessExpress({ app: expressApp })(event, context);
-  }
+// Экспорт для serverless (AWS Lambda) - default export
+export default async (event: any, context: any) => {
+  const expressApp = await bootstrap();
+  const serverlessExpress = require('@vendia/serverless-express');
+  return serverlessExpress({ app: expressApp })(event, context);
 };
