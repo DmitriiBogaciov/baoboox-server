@@ -34,7 +34,9 @@ import { PUBSUB } from './utils/pubsub.constants';
       subscriptions: {
         'graphql-ws': true
       },
-      autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+      autoSchemaFile: process.env.NODE_ENV === 'production' 
+        ? join('/tmp', 'schema.gql') 
+        : join(process.cwd(), 'src/schema.gql'),
       sortSchema: true,
       resolvers: { JSON: GraphQLJSON },
       context: ({ req }) => ({ req }),
