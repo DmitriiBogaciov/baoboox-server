@@ -16,16 +16,8 @@ import { DevtoolsModule } from '@nestjs/devtools-integration';
 import { HttpModule } from '@nestjs/axios';
 import { GraphQLJSON } from 'graphql-type-json';
 import { pubSub } from './utils/pubsub.provider';
-import { parse } from 'url';
-import { RedisClientModule } from './utils/redis-client.module';
 import { PageController } from './page/page.controller';
 import { PUBSUB } from './utils/pubsub.constants';
-
-const redisUrl = process.env.REDIS_URL!;
-const parsed = parse(redisUrl);
-
-const host = parsed.hostname!;
-const redisPort = Number(parsed.port);
 
 @Module({
   imports: [
@@ -63,7 +55,6 @@ const redisPort = Number(parsed.port);
     BlockModule,
     AuthModule,
     HttpModule,
-    RedisClientModule
   ],
   controllers: [AppController, PageController],
   providers: [

@@ -7,6 +7,7 @@ import { Model, Connection } from 'mongoose';
 import { CategoryService } from '../category/category.service'
 import { Types } from 'mongoose';
 import { ID } from 'graphql-ws';
+import { RemoveRes } from 'src/utils/classes'
 
 
 @Injectable()
@@ -80,8 +81,12 @@ export class BookService {
     }
   }
 
-  async remove(id: ID) {
-    const res = await this.bookModel.deleteOne({ _id: id });
-    return res;
+  async remove(id: ID): Promise<RemoveRes> {
+    const result = await this.bookModel.deleteOne({ _id: id });
+    return {
+      acknowledged: result.acknowledged,
+      deletedCount: result.deletedCount,
+      bookId: id.toString()
+    };
   }
 }

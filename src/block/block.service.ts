@@ -49,7 +49,7 @@ export class BlockService {
       throw new Error(`Error updating block: ${error.message}`);
     }
   }
-  remove(id: ID) {
+  remove(id: ID): Promise<any> {
     return this.blockModel.deleteOne({_id: id});
   }
 }

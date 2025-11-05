@@ -8,14 +8,12 @@ import { AuthGuard } from '../auth/AuthGuard';
 import { UseGuards, Logger, Inject } from '@nestjs/common';
 import { PUBSUB } from '../utils/pubsub.constants';
 import { PubSub } from 'graphql-subscriptions';
-import { ClientProxy, EventPattern } from '@nestjs/microservices';
 
 @Resolver(() => Page)
 export class PageResolver {
   constructor(
     private readonly pageService: PageService,
     @Inject(PUBSUB) private readonly pubSub: PubSub,
-    @Inject('BOOK_SERVICE') private readonly bookClient: ClientProxy,
   ) { }
 
   private logger: Logger = new Logger(PageResolver.name)

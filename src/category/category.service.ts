@@ -48,8 +48,9 @@ export class CategoryService {
     return newCat;
   }
 
-  remove(id: String) {
-    return this.categoryModel.deleteOne({ _id: id });
+  async remove(id: String): Promise<any> {
+    const result = await this.categoryModel.deleteOne({ _id: id });
+    return result;
   }
 
   // async checkCategoriesExist(categoryIds: string[]): Promise<void> {

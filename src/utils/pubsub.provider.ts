@@ -12,14 +12,12 @@ const createRedisConnection = () => {
       password: parsed.auth ? parsed.auth.split(':')[1] : undefined,
       tls: isTls ? { rejectUnauthorized: false } : undefined,
     };
-  } else {
-    return {
-      host: process.env.REDIS_HOST || 'localhost',
-      port: process.env.REDIS_PORT ? Number(process.env.REDIS_PORT) : 6379,
-    };
   }
+  return null;
 };
 
-export const pubSub = new RedisPubSub({
-  connection: createRedisConnection(),
-});
+const connectionConfig = createRedisConnection();
+
+export const pubSub = connectionConfig 
+  ? new RedisPubSub({ connection: connectionConfig })
+  : null;
